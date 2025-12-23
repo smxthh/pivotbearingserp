@@ -118,6 +118,48 @@ export type Database = {
           },
         ]
       }
+      data_export_logs: {
+        Row: {
+          created_at: string
+          export_format: string
+          export_type: string
+          file_size_bytes: number | null
+          id: string
+          metadata: Json | null
+          record_count: number | null
+          superadmin_id: string
+          target_user_email: string
+          target_user_id: string | null
+          tenant_id: string
+        }
+        Insert: {
+          created_at?: string
+          export_format?: string
+          export_type?: string
+          file_size_bytes?: number | null
+          id?: string
+          metadata?: Json | null
+          record_count?: number | null
+          superadmin_id: string
+          target_user_email: string
+          target_user_id?: string | null
+          tenant_id: string
+        }
+        Update: {
+          created_at?: string
+          export_format?: string
+          export_type?: string
+          file_size_bytes?: number | null
+          id?: string
+          metadata?: Json | null
+          record_count?: number | null
+          superadmin_id?: string
+          target_user_email?: string
+          target_user_id?: string | null
+          tenant_id?: string
+        }
+        Relationships: []
+      }
       distributor_profiles: {
         Row: {
           account_name: string | null
@@ -2721,18 +2763,21 @@ export type Database = {
           created_at: string
           id: string
           role: Database["public"]["Enums"]["app_role"]
+          tenant_id: string | null
           user_id: string
         }
         Insert: {
           created_at?: string
           id?: string
           role: Database["public"]["Enums"]["app_role"]
+          tenant_id?: string | null
           user_id: string
         }
         Update: {
           created_at?: string
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
+          tenant_id?: string | null
           user_id?: string
         }
         Relationships: []
@@ -3258,6 +3303,16 @@ export type Database = {
           },
         ]
       }
+      tenant_users: {
+        Row: {
+          created_at: string | null
+          email: string | null
+          role: Database["public"]["Enums"]["app_role"] | null
+          tenant_id: string | null
+          user_id: string | null
+        }
+        Relationships: []
+      }
       view_available_packing_stock: {
         Row: {
           available_quantity: number | null
@@ -3336,6 +3391,7 @@ export type Database = {
       }
     }
     Functions: {
+      belongs_to_tenant: { Args: { p_tenant_id: string }; Returns: boolean }
       create_gate_inward_atomic: {
         Args: { p_header: Json; p_items: Json }
         Returns: Json
@@ -3455,6 +3511,7 @@ export type Database = {
       }
       get_salesperson_distributor_id: { Args: never; Returns: string }
       get_user_distributor_id: { Args: never; Returns: string }
+      get_user_tenant_id: { Args: never; Returns: string }
       get_voucher_prefixes_for_type: {
         Args: { p_distributor_id: string; p_voucher_name: string }
         Returns: {
@@ -3484,6 +3541,7 @@ export type Database = {
       }
       is_admin: { Args: never; Returns: boolean }
       is_superadmin: { Args: never; Returns: boolean }
+      is_tenant_superadmin: { Args: { p_tenant_id: string }; Returns: boolean }
       preview_next_document_number: {
         Args: {
           p_distributor_id: string

@@ -50,6 +50,7 @@ import TopProducts from "@/pages/reports/TopProducts";
 import StateWiseSales from "@/pages/reports/StateWiseSales";
 import Profile from "@/pages/Profile";
 import UserManagement from "@/pages/admin/UserManagement";
+import DataExportPage from "@/pages/admin/DataExportPage";
 import StoreLocationPage from "@/pages/store/StoreLocationPage";
 import GateInwardPage from "@/pages/store/GateInwardPage";
 import MarkingPage from "@/pages/store/MarkingPage";
@@ -103,8 +104,16 @@ const App = () => (
                         <Route
                           path="/admin/users"
                           element={
-                            <RoleBasedRoute allowedRoles={['admin']}>
+                            <RoleBasedRoute allowedRoles={['superadmin', 'admin']}>
                               <UserManagement />
+                            </RoleBasedRoute>
+                          }
+                        />
+                        <Route
+                          path="/admin/export"
+                          element={
+                            <RoleBasedRoute allowedRoles={['superadmin']}>
+                              <DataExportPage />
                             </RoleBasedRoute>
                           }
                         />

@@ -69,58 +69,58 @@ const menuGroups: MenuGroup[] = [
         title: 'Dashboard',
         href: '/',
         icon: LayoutDashboard,
-        allowedRoles: ['admin', 'distributor', 'salesperson']
+        allowedRoles: ['superadmin', 'admin', 'distributor', 'salesperson']
       },
       {
         title: 'Party Master',
         href: '/parties',
         icon: Users,
-        allowedRoles: ['admin', 'distributor']
+        allowedRoles: ['superadmin', 'admin', 'distributor']
       },
       {
         title: 'Item Master',
         icon: Package,
-        allowedRoles: ['admin', 'distributor'],
+        allowedRoles: ['superadmin', 'admin', 'distributor'],
         children: [
-          { title: 'Item Category', href: '/items/categories', icon: Layers, allowedRoles: ['admin', 'distributor'] },
-          { title: 'Products', href: '/items/products', icon: Boxes, allowedRoles: ['admin', 'distributor'] },
-          { title: 'Service Items', href: '/items/services', icon: Tags, allowedRoles: ['admin', 'distributor'] },
-          { title: 'Brand Master', href: '/items/brands', icon: Award, allowedRoles: ['admin', 'distributor'] },
+          { title: 'Item Category', href: '/items/categories', icon: Layers, allowedRoles: ['superadmin', 'admin', 'distributor'] },
+          { title: 'Products', href: '/items/products', icon: Boxes, allowedRoles: ['superadmin', 'admin', 'distributor'] },
+          { title: 'Service Items', href: '/items/services', icon: Tags, allowedRoles: ['superadmin', 'admin', 'distributor'] },
+          { title: 'Brand Master', href: '/items/brands', icon: Award, allowedRoles: ['superadmin', 'admin', 'distributor'] },
         ],
       },
       {
         title: 'Purchase',
         icon: ShoppingCart,
-        allowedRoles: ['admin', 'distributor'],
+        allowedRoles: ['superadmin', 'admin', 'distributor'],
         children: [
-          { title: 'Purchase Order', href: '/purchase-orders', icon: ClipboardList, allowedRoles: ['admin', 'distributor'] },
-          { title: 'Purchase Invoice', href: '/purchase/invoice', icon: Receipt, allowedRoles: ['admin', 'distributor'] },
+          { title: 'Purchase Order', href: '/purchase-orders', icon: ClipboardList, allowedRoles: ['superadmin', 'admin', 'distributor'] },
+          { title: 'Purchase Invoice', href: '/purchase/invoice', icon: Receipt, allowedRoles: ['superadmin', 'admin', 'distributor'] },
         ],
       },
       {
         title: 'Sales',
         icon: IndianRupee,
-        allowedRoles: ['admin', 'distributor', 'salesperson'],
+        allowedRoles: ['superadmin', 'admin', 'distributor', 'salesperson'],
         children: [
-          { title: 'Sales Enquiry', href: '/sales/enquiry', icon: FileText, allowedRoles: ['admin', 'distributor', 'salesperson'] },
-          { title: 'Sales Quotation', href: '/sales/quotation', icon: FilePlus, allowedRoles: ['admin', 'distributor', 'salesperson'] },
-          { title: 'Sales Order', href: '/sales/order', icon: ClipboardList, allowedRoles: ['admin', 'distributor', 'salesperson'] },
-          { title: 'Delivery Challan', href: '/sales/challan', icon: Truck, allowedRoles: ['admin', 'distributor', 'salesperson'] },
-          { title: 'Tax Invoice', href: '/sales/tax-invoice', icon: FileCheck, allowedRoles: ['admin', 'distributor', 'salesperson'] },
-          { title: 'Price Structure', href: '/sales/price-structure', icon: Tags, allowedRoles: ['admin', 'distributor'] },
-          { title: 'Sales Zone', href: '/sales/zones', icon: MapPin, allowedRoles: ['admin', 'distributor'] },
+          { title: 'Sales Enquiry', href: '/sales/enquiry', icon: FileText, allowedRoles: ['superadmin', 'admin', 'distributor', 'salesperson'] },
+          { title: 'Sales Quotation', href: '/sales/quotation', icon: FilePlus, allowedRoles: ['superadmin', 'admin', 'distributor', 'salesperson'] },
+          { title: 'Sales Order', href: '/sales/order', icon: ClipboardList, allowedRoles: ['superadmin', 'admin', 'distributor', 'salesperson'] },
+          { title: 'Delivery Challan', href: '/sales/challan', icon: Truck, allowedRoles: ['superadmin', 'admin', 'distributor', 'salesperson'] },
+          { title: 'Tax Invoice', href: '/sales/tax-invoice', icon: FileCheck, allowedRoles: ['superadmin', 'admin', 'distributor', 'salesperson'] },
+          { title: 'Price Structure', href: '/sales/price-structure', icon: Tags, allowedRoles: ['superadmin', 'admin', 'distributor'] },
+          { title: 'Sales Zone', href: '/sales/zones', icon: MapPin, allowedRoles: ['superadmin', 'admin', 'distributor'] },
         ],
       },
       {
         title: 'Store',
         icon: Warehouse,
-        allowedRoles: ['admin', 'distributor'],
+        allowedRoles: ['superadmin', 'admin', 'distributor'],
         children: [
-          { title: 'Store Location', href: '/store/location', icon: MapPin, allowedRoles: ['admin', 'distributor'] },
-          { title: 'Gate Inward', href: '/store/gate-inward', icon: PackageCheck, allowedRoles: ['admin', 'distributor'] },
-          { title: 'Marking', href: '/store/marking', icon: Stamp, allowedRoles: ['admin', 'distributor'] },
-          { title: 'Packing', href: '/store/packing', icon: PackageOpen, allowedRoles: ['admin', 'distributor'] },
-          { title: 'Opening Stock', href: '/store/opening-stock', icon: Archive, allowedRoles: ['admin', 'distributor'] },
+          { title: 'Store Location', href: '/store/location', icon: MapPin, allowedRoles: ['superadmin', 'admin', 'distributor'] },
+          { title: 'Gate Inward', href: '/store/gate-inward', icon: PackageCheck, allowedRoles: ['superadmin', 'admin', 'distributor'] },
+          { title: 'Marking', href: '/store/marking', icon: Stamp, allowedRoles: ['superadmin', 'admin', 'distributor'] },
+          { title: 'Packing', href: '/store/packing', icon: PackageOpen, allowedRoles: ['superadmin', 'admin', 'distributor'] },
+          { title: 'Opening Stock', href: '/store/opening-stock', icon: Archive, allowedRoles: ['superadmin', 'admin', 'distributor'] },
         ],
       },
     ]
@@ -131,32 +131,31 @@ const menuGroups: MenuGroup[] = [
       {
         title: 'Accounting',
         icon: BookOpen,
-        allowedRoles: ['admin', 'distributor'],
+        allowedRoles: ['superadmin', 'admin', 'distributor'],
         children: [
-          { title: 'Ledger', href: '/accounting/ledger', icon: BookOpen, allowedRoles: ['admin', 'distributor'] },
-          { title: 'Debit Note', href: '/accounting/debit-note', icon: ArrowUpCircle, allowedRoles: ['admin', 'distributor'] },
-
-          { title: 'Credit Note', href: '/accounting/credit-note', icon: ArrowDownCircle, allowedRoles: ['admin', 'distributor'] },
-          { title: 'GST Expense', href: '/accounting/gst-expense', icon: Calculator, allowedRoles: ['admin', 'distributor'] },
-          { title: 'GST Income', href: '/accounting/gst-income', icon: CreditCard, allowedRoles: ['admin', 'distributor'] },
-          { title: 'GST Payment', href: '/accounting/gst-payment', icon: Wallet, allowedRoles: ['admin', 'distributor'] },
-          { title: 'TCS/TDS Payment', href: '/accounting/tcs-tds-payment', icon: HandCoins, allowedRoles: ['admin', 'distributor'] },
-          { title: 'Journal Entry', href: '/accounting/journal-entry', icon: PenLine, allowedRoles: ['admin', 'distributor'] },
-          { title: 'Payment Voucher', href: '/accounting/payment-voucher', icon: FileText, allowedRoles: ['admin', 'distributor'] },
-          { title: 'Receivables', href: '/accounting/receivables', icon: ArrowDownCircle, allowedRoles: ['admin', 'distributor'] },
-          { title: 'Payables', href: '/accounting/payables', icon: ArrowUpCircle, allowedRoles: ['admin', 'distributor'] },
+          { title: 'Ledger', href: '/accounting/ledger', icon: BookOpen, allowedRoles: ['superadmin', 'admin', 'distributor'] },
+          { title: 'Debit Note', href: '/accounting/debit-note', icon: ArrowUpCircle, allowedRoles: ['superadmin', 'admin', 'distributor'] },
+          { title: 'Credit Note', href: '/accounting/credit-note', icon: ArrowDownCircle, allowedRoles: ['superadmin', 'admin', 'distributor'] },
+          { title: 'GST Expense', href: '/accounting/gst-expense', icon: Calculator, allowedRoles: ['superadmin', 'admin', 'distributor'] },
+          { title: 'GST Income', href: '/accounting/gst-income', icon: CreditCard, allowedRoles: ['superadmin', 'admin', 'distributor'] },
+          { title: 'GST Payment', href: '/accounting/gst-payment', icon: Wallet, allowedRoles: ['superadmin', 'admin', 'distributor'] },
+          { title: 'TCS/TDS Payment', href: '/accounting/tcs-tds-payment', icon: HandCoins, allowedRoles: ['superadmin', 'admin', 'distributor'] },
+          { title: 'Journal Entry', href: '/accounting/journal-entry', icon: PenLine, allowedRoles: ['superadmin', 'admin', 'distributor'] },
+          { title: 'Payment Voucher', href: '/accounting/payment-voucher', icon: FileText, allowedRoles: ['superadmin', 'admin', 'distributor'] },
+          { title: 'Receivables', href: '/accounting/receivables', icon: ArrowDownCircle, allowedRoles: ['superadmin', 'admin', 'distributor'] },
+          { title: 'Payables', href: '/accounting/payables', icon: ArrowUpCircle, allowedRoles: ['superadmin', 'admin', 'distributor'] },
         ],
       },
       {
         title: 'Reports',
         icon: BarChart3,
-        allowedRoles: ['admin', 'distributor'],
+        allowedRoles: ['superadmin', 'admin', 'distributor'],
         children: [
-          { title: 'Sales Report', href: '/reports/sales', icon: TrendingUp, allowedRoles: ['admin', 'distributor'] },
-          { title: 'Purchase Report', href: '/reports/purchase', icon: ShoppingCart, allowedRoles: ['admin', 'distributor'] },
-          { title: 'Top Customers', href: '/reports/customers', icon: Users, allowedRoles: ['admin', 'distributor'] },
-          { title: 'Top Products', href: '/reports/products', icon: PieChart, allowedRoles: ['admin', 'distributor'] },
-          { title: 'State-wise Sales', href: '/reports/states', icon: MapPin, allowedRoles: ['admin', 'distributor'] },
+          { title: 'Sales Report', href: '/reports/sales', icon: TrendingUp, allowedRoles: ['superadmin', 'admin', 'distributor'] },
+          { title: 'Purchase Report', href: '/reports/purchase', icon: ShoppingCart, allowedRoles: ['superadmin', 'admin', 'distributor'] },
+          { title: 'Top Customers', href: '/reports/customers', icon: Users, allowedRoles: ['superadmin', 'admin', 'distributor'] },
+          { title: 'Top Products', href: '/reports/products', icon: PieChart, allowedRoles: ['superadmin', 'admin', 'distributor'] },
+          { title: 'State-wise Sales', href: '/reports/states', icon: MapPin, allowedRoles: ['superadmin', 'admin', 'distributor'] },
         ],
       },
     ]
@@ -167,16 +166,16 @@ const menuGroups: MenuGroup[] = [
       {
         title: 'Configuration',
         icon: Settings,
-        allowedRoles: ['admin', 'distributor'],
+        allowedRoles: ['superadmin', 'admin', 'distributor'],
         children: [
-          { title: 'Terms', href: '/config/terms', icon: FileText, allowedRoles: ['admin', 'distributor'] },
-          { title: 'Transport', href: '/config/transport', icon: Truck, allowedRoles: ['admin', 'distributor'] },
-          { title: 'HSN Master', href: '/config/hsn', icon: Hash, allowedRoles: ['admin', 'distributor'] },
-          { title: 'Tax Master', href: '/config/tax', icon: Percent, allowedRoles: ['admin', 'distributor'] },
-          { title: 'Expense Master', href: '/config/expense', icon: Receipt, allowedRoles: ['admin', 'distributor'] },
-          { title: 'Group Master', href: '/config/group', icon: Folder, allowedRoles: ['admin', 'distributor'] },
-          { title: 'Tax Class', href: '/config/tax-class', icon: ListTree, allowedRoles: ['admin', 'distributor'] },
-          { title: 'Voucher Prefix', href: '/config/voucher-prefix', icon: BookMarked, allowedRoles: ['admin', 'distributor'] },
+          { title: 'Terms', href: '/config/terms', icon: FileText, allowedRoles: ['superadmin', 'admin', 'distributor'] },
+          { title: 'Transport', href: '/config/transport', icon: Truck, allowedRoles: ['superadmin', 'admin', 'distributor'] },
+          { title: 'HSN Master', href: '/config/hsn', icon: Hash, allowedRoles: ['superadmin', 'admin', 'distributor'] },
+          { title: 'Tax Master', href: '/config/tax', icon: Percent, allowedRoles: ['superadmin', 'admin', 'distributor'] },
+          { title: 'Expense Master', href: '/config/expense', icon: Receipt, allowedRoles: ['superadmin', 'admin', 'distributor'] },
+          { title: 'Group Master', href: '/config/group', icon: Folder, allowedRoles: ['superadmin', 'admin', 'distributor'] },
+          { title: 'Tax Class', href: '/config/tax-class', icon: ListTree, allowedRoles: ['superadmin', 'admin', 'distributor'] },
+          { title: 'Voucher Prefix', href: '/config/voucher-prefix', icon: BookMarked, allowedRoles: ['superadmin', 'admin', 'distributor'] },
         ],
       },
     ]
@@ -188,13 +187,19 @@ const menuGroups: MenuGroup[] = [
         title: 'User Management',
         href: '/admin/users',
         icon: ShieldCheck,
-        allowedRoles: ['admin']
+        allowedRoles: ['superadmin', 'admin']
+      },
+      {
+        title: 'Data Export',
+        href: '/admin/export',
+        icon: Archive,
+        allowedRoles: ['superadmin'] // Only SuperAdmin can download data
       },
       {
         title: 'My Profile',
         href: '/profile',
         icon: Settings,
-        allowedRoles: ['admin', 'distributor', 'salesperson']
+        allowedRoles: ['superadmin', 'admin', 'distributor', 'salesperson']
       },
     ]
   }

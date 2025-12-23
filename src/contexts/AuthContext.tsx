@@ -9,6 +9,7 @@ interface AuthContextType {
   session: Session | null;
   loading: boolean;
   role: AppRole | null;
+  tenantId: string | null;
   hasRole: boolean;
   isAdmin: boolean;
   isSuperadmin: boolean;
@@ -26,25 +27,37 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [role, setRole] = useState<AppRole | null>(null);
+  const [tenantId, setTenantId] = useState<string | null>(null);
 
   const fetchUserRole = async (userId: string) => {
     try {
       const { data, error } = await supabase
         .from('user_roles')
-        .select('role')
+        .select('role, tenant_id')
         .eq('user_id', userId)
         .maybeSingle();
 
       if (error) {
         console.error('Error fetching role:', error);
         setRole(null);
+        setTenantId(null);
         return;
       }
 
-      setRole(data?.role as AppRole | null);
+      const userRole = data?.role as AppRole | null;
+      setRole(userRole);
+      
+      // For superadmin, their tenant_id is their own user_id
+      // For others, use the tenant_id from the role assignment
+      if (userRole === 'superadmin') {
+        setTenantId(userId);
+      } else {
+        setTenantId(data?.tenant_id || null);
+      }
     } catch (err) {
       console.error('Error in fetchUserRole:', err);
       setRole(null);
+      setTenantId(null);
     }
   };
 
@@ -110,6 +123,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signOut = async () => {
     await supabase.auth.signOut();
     setRole(null);
+    setTenantId(null);
   };
 
   const resetPassword = async (email: string) => {
@@ -129,6 +143,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       session,
       loading,
       role,
+      tenantId,
       hasRole,
       isAdmin,
       isSuperadmin,
