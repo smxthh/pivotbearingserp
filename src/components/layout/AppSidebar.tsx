@@ -433,13 +433,15 @@ export function AppSidebar() {
 
   if (sidebarCollapsed) {
     return (
-      <button
-        onClick={toggleSidebar}
-        className="fixed top-[12px] left-4 z-50 w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-primary transition-all duration-200 shadow-md group border-b-2"
-        title="Expand Sidebar"
-      >
-        <PanelLeftClose className="h-5 w-5 rotate-180" strokeWidth={1.5} />
-      </button>
+      <aside className="fixed left-0 top-0 bottom-0 w-16 bg-white border-r border-slate-200 flex flex-col items-center py-4 z-40 shadow-sm">
+        <button
+          onClick={toggleSidebar}
+          className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary hover:bg-primary/20 transition-all duration-200"
+          title="Expand Sidebar"
+        >
+          <PanelLeftClose className="h-5 w-5 rotate-180" strokeWidth={1.5} />
+        </button>
+      </aside>
     );
   }
 
