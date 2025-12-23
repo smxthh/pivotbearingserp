@@ -31,7 +31,7 @@ export default function Auth() {
   const [invitation, setInvitation] = useState<InvitationData | null>(null);
   const [loadingInvitation, setLoadingInvitation] = useState(false);
   
-  const { signIn, signUp, resetPassword, user } = useAuth();
+  const { signIn, signUp, resetPassword, user, isLoggingOut } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams] = useSearchParams();
@@ -72,11 +72,12 @@ export default function Auth() {
     loadInvitation();
   }, [invitationId]);
 
+  // Only redirect if user is logged in AND not in the process of logging out
   useEffect(() => {
-    if (user) {
+    if (user && !isLoggingOut) {
       navigate(from, { replace: true });
     }
-  }, [user, navigate, from]);
+  }, [user, isLoggingOut, navigate, from]);
 
   const validateForm = (): boolean => {
     setError(null);
