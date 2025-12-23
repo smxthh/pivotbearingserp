@@ -113,7 +113,7 @@ const handler = async (req: Request): Promise<Response> => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "Pivot ERP <onboarding@resend.dev>",
+        from: "Pivot ERP <noreply@pivotbearingsindia.com>",
         to: [email],
         subject: `You're invited to join ${companyName} on Pivot ERP`,
         html: emailHtml,
