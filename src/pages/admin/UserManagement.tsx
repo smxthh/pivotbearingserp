@@ -24,6 +24,13 @@ interface UserWithRole {
   created_at: string;
   role: AppRole | null;
   role_id: string | null;
+  tenant_id: string | null;
+}
+
+interface AdminOption {
+  id: string;
+  email: string;
+  role: AppRole;
 }
 
 interface Invitation {
@@ -33,6 +40,7 @@ interface Invitation {
   created_at: string;
   expires_at: string;
   accepted_at: string | null;
+  tenant_id: string;
 }
 
 const ROLE_CONFIG: Record<AppRole, { label: string; icon: React.ElementType; color: string }> = {
@@ -43,7 +51,9 @@ const ROLE_CONFIG: Record<AppRole, { label: string; icon: React.ElementType; col
 
 export default function UserManagement() {
   const { user: currentUser, isSuperadmin, tenantId } = useAuth();
-  const [users, setUsers] = useState<UserWithRole[]>([]);
+  const [allUsers, setAllUsers] = useState<UserWithRole[]>([]);
+  const [admins, setAdmins] = useState<AdminOption[]>([]);
+  const [selectedAdminId, setSelectedAdminId] = useState<string>('all');
   const [invitations, setInvitations] = useState<Invitation[]>([]);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState<string | null>(null);
@@ -55,28 +65,24 @@ export default function UserManagement() {
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      // Fetch user roles with tenant filtering - RLS filters by tenant for admins
+      // Fetch ALL user roles
       const { data: roles, error: rolesError } = await supabase
         .from('user_roles')
         .select('id, user_id, role, tenant_id');
 
       if (rolesError) throw rolesError;
 
-      // For admins, filter to only show users in their tenant
-      const filteredRoles = isSuperadmin 
-        ? roles 
-        : roles?.filter(r => r.tenant_id === tenantId);
-
-      // Get user IDs that belong to this tenant
-      const userIds = filteredRoles?.map(r => r.user_id) || [];
+      // Get all user IDs
+      const userIds = roles?.map(r => r.user_id) || [];
 
       if (userIds.length === 0) {
-        setUsers([]);
+        setAllUsers([]);
+        setAdmins([]);
         setLoading(false);
         return;
       }
 
-      // Fetch profiles only for users in this tenant
+      // Fetch all profiles
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select('id, email, created_at')
@@ -85,35 +91,35 @@ export default function UserManagement() {
 
       if (profilesError) throw profilesError;
 
-      // Combine data
+      // Combine data with tenant_id
       const usersWithRoles: UserWithRole[] = (profiles || [])
         .map(profile => {
-          const userRole = filteredRoles?.find(r => r.user_id === profile.id);
+          const userRole = roles?.find(r => r.user_id === profile.id);
           return {
             id: profile.id,
             email: profile.email,
             created_at: profile.created_at,
             role: userRole?.role as AppRole | null,
             role_id: userRole?.id || null,
+            tenant_id: userRole?.tenant_id || null,
           };
         })
         .filter(u => u.role !== null);
 
-      setUsers(usersWithRoles);
+      setAllUsers(usersWithRoles);
 
-      // Fetch pending invitations for this tenant
-      let invitesQuery = supabase
+      // Extract admins (admin and superadmin) for the dropdown
+      const adminUsers = usersWithRoles
+        .filter(u => u.role === 'admin' || u.role === 'superadmin')
+        .map(u => ({ id: u.id, email: u.email, role: u.role as AppRole }));
+      setAdmins(adminUsers);
+
+      // Fetch pending invitations
+      const { data: invites, error: invitesError } = await supabase
         .from('user_invitations')
         .select('*')
         .is('accepted_at', null)
         .order('created_at', { ascending: false });
-      
-      // Admins only see invitations for their tenant
-      if (!isSuperadmin && tenantId) {
-        invitesQuery = invitesQuery.eq('tenant_id', tenantId);
-      }
-
-      const { data: invites, error: invitesError } = await invitesQuery;
 
       if (!invitesError && invites) {
         setInvitations(invites as Invitation[]);
@@ -227,7 +233,7 @@ export default function UserManagement() {
   const handleRoleChange = async (userId: string, newRole: AppRole | 'none') => {
     setUpdating(userId);
     try {
-      const userToUpdate = users.find(u => u.id === userId);
+      const userToUpdate = allUsers.find(u => u.id === userId);
 
       if (newRole === 'none') {
         if (userToUpdate?.role_id) {
@@ -325,8 +331,36 @@ export default function UserManagement() {
     }
   };
 
-  const assignedUsers = users.filter(u => u.role);
-  const unassignedUsers = users.filter(u => !u.role);
+  // Filter users based on selected admin (for superadmin view) or tenant (for admin view)
+  const getFilteredUsers = () => {
+    if (!isSuperadmin) {
+      // Admin view: only show users in their tenant
+      return allUsers.filter(u => u.tenant_id === tenantId);
+    }
+    
+    // Superadmin view: filter by selected admin
+    if (selectedAdminId === 'all') {
+      return allUsers;
+    }
+    return allUsers.filter(u => u.tenant_id === selectedAdminId);
+  };
+
+  const filteredUsers = getFilteredUsers();
+  const assignedUsers = filteredUsers.filter(u => u.role);
+  const unassignedUsers = allUsers.filter(u => !u.role);
+
+  // Get admin name for display
+  const getAdminName = (adminId: string) => {
+    const admin = admins.find(a => a.id === adminId);
+    return admin?.email || 'Unknown Admin';
+  };
+
+  // Filter invitations based on selected admin
+  const filteredInvitations = isSuperadmin && selectedAdminId !== 'all'
+    ? invitations.filter(i => i.tenant_id === selectedAdminId)
+    : !isSuperadmin && tenantId
+    ? invitations.filter(i => i.tenant_id === tenantId)
+    : invitations;
 
   return (
     <PageContainer
@@ -368,16 +402,41 @@ export default function UserManagement() {
         </>
       }
     >
+      {/* Admin Filter Dropdown - Only for Superadmin */}
+      {isSuperadmin && admins.length > 0 && (
+        <div className="mb-6">
+          <div className="flex items-center gap-3">
+            <Label className="text-sm font-medium whitespace-nowrap">Filter by Admin:</Label>
+            <Select value={selectedAdminId} onValueChange={setSelectedAdminId}>
+              <SelectTrigger className="w-64">
+                <SelectValue placeholder="Select admin" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Users ({allUsers.length})</SelectItem>
+                {admins.map(admin => {
+                  const teamCount = allUsers.filter(u => u.tenant_id === admin.id).length;
+                  return (
+                    <SelectItem key={admin.id} value={admin.id}>
+                      {admin.email} ({teamCount})
+                    </SelectItem>
+                  );
+                })}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+      )}
+
       {/* Pending Invitations */}
-      {invitations.length > 0 && (
+      {filteredInvitations.length > 0 && (
         <div className="mb-8">
           <h2 className="text-lg font-semibold text-foreground tracking-[-0.06em] mb-4 flex items-center gap-2">
             <Mail className="w-5 h-5 text-amber-500" />
-            Pending Invitations ({invitations.length})
+            Pending Invitations ({filteredInvitations.length})
           </h2>
           <div className="bg-card border border-border rounded-xl overflow-hidden">
             <div className="divide-y divide-border">
-              {invitations.map((invite) => (
+              {filteredInvitations.map((invite) => (
                 <div key={invite.id} className="flex items-center justify-between p-4 hover:bg-muted/30 transition-colors">
                   <div className="flex items-center gap-4 min-w-0 flex-1">
                     <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center text-amber-600">
@@ -389,6 +448,9 @@ export default function UserManagement() {
                       </p>
                       <p className="text-xs text-muted-foreground">
                         Invited as {ROLE_CONFIG[invite.role].label} • Expires {new Date(invite.expires_at).toLocaleDateString()}
+                        {isSuperadmin && invite.tenant_id && (
+                          <span className="ml-2">• Admin: {getAdminName(invite.tenant_id)}</span>
+                        )}
                       </p>
                     </div>
                   </div>
@@ -428,6 +490,7 @@ export default function UserManagement() {
                   updating={updating}
                   onRoleChange={handleRoleChange}
                   onDelete={deleteUser}
+                  admins={admins}
                 />
               ))}
             </div>
@@ -452,6 +515,7 @@ export default function UserManagement() {
                   updating={updating}
                   onRoleChange={handleRoleChange}
                   onDelete={deleteUser}
+                  admins={admins}
                 />
               ))}
             </div>
@@ -517,17 +581,27 @@ function UserRow({
   updating,
   onRoleChange,
   onDelete,
+  admins,
 }: {
   user: UserWithRole;
   currentUserId?: string;
   updating: string | null;
   onRoleChange: (userId: string, role: AppRole | 'none') => void;
   onDelete: (userId: string, email: string) => void;
+  admins: AdminOption[];
 }) {
   const { isSuperadmin } = useAuth();
   const isCurrentUser = user.id === currentUserId;
   const RoleIcon = user.role ? ROLE_CONFIG[user.role].icon : UserX;
   const roleColor = user.role ? ROLE_CONFIG[user.role].color : 'text-destructive';
+
+  // Get admin name for salespersons
+  const getAdminEmail = () => {
+    if (user.role !== 'salesperson' || !user.tenant_id) return null;
+    const admin = admins.find(a => a.id === user.tenant_id);
+    return admin?.email;
+  };
+  const adminEmail = getAdminEmail();
 
   return (
     <div className="flex items-center justify-between p-4 hover:bg-muted/30 transition-colors">
@@ -544,6 +618,9 @@ function UserRow({
           </p>
           <p className="text-xs text-muted-foreground">
             {user.role ? ROLE_CONFIG[user.role].label : 'No Role Assigned'} • Joined {new Date(user.created_at).toLocaleDateString()}
+            {isSuperadmin && adminEmail && user.role === 'salesperson' && (
+              <span className="ml-1">• of {adminEmail}</span>
+            )}
           </p>
         </div>
       </div>
