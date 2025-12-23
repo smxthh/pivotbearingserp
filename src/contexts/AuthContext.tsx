@@ -74,6 +74,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
+        
+        // Reset logging out state when auth state changes
+        if (event === 'SIGNED_IN') {
+          setIsLoggingOut(false);
+        }
 
         if (session?.user) {
           setTimeout(() => {
