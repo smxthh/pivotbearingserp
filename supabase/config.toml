@@ -2,3 +2,6 @@ project_id = "rafsrfmqzbpqnnrewbjd"
 
 [functions.send-invitation]
 verify_jwt = false
+
+[functions.create-salesperson]
+verify_jwt = true
