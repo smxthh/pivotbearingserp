@@ -149,14 +149,17 @@ export default function UserManagement() {
 
     setInviting(true);
     try {
-      const { error } = await supabase
+      // First, create the invitation record
+      const { data: invitation, error } = await supabase
         .from('user_invitations')
         .insert({
           email: inviteEmail.toLowerCase().trim(),
           role: 'salesperson',
           inviter_id: currentUser?.id,
           tenant_id: tenantId,
-        });
+        })
+        .select()
+        .single();
 
       if (error) {
         if (error.code === '23505') {
@@ -164,12 +167,51 @@ export default function UserManagement() {
         } else {
           throw error;
         }
-      } else {
-        toast.success(`Invitation sent to ${inviteEmail}`);
-        setInviteEmail('');
-        setInviteDialogOpen(false);
-        fetchUsers();
+        return;
       }
+
+      // Get inviter name and company name for the email
+      const { data: inviterProfile } = await supabase
+        .from('profiles')
+        .select('email')
+        .eq('id', currentUser?.id)
+        .single();
+
+      const { data: distributorProfile } = await supabase
+        .from('distributor_profiles')
+        .select('company_name')
+        .eq('user_id', tenantId)
+        .single();
+
+      const inviterName = inviterProfile?.email || 'Your admin';
+      const companyName = distributorProfile?.company_name || 'the company';
+      
+      // Build the signup URL with invitation token
+      const signupUrl = `${window.location.origin}/auth?invitation=${invitation.id}`;
+
+      // Send invitation email via edge function
+      const { data: emailResult, error: emailError } = await supabase.functions.invoke('send-invitation', {
+        body: {
+          email: inviteEmail.toLowerCase().trim(),
+          inviterName,
+          companyName,
+          signupUrl,
+        },
+      });
+
+      if (emailError) {
+        console.error('Error sending invitation email:', emailError);
+        toast.warning(`Invitation created but email failed to send. The user can still sign up using this link: ${signupUrl}`);
+      } else if (emailResult?.success) {
+        toast.success(`Invitation email sent to ${inviteEmail}`);
+      } else {
+        console.error('Email send failed:', emailResult);
+        toast.warning(`Invitation created but email may not have been sent. Share this link with them: ${signupUrl}`);
+      }
+
+      setInviteEmail('');
+      setInviteDialogOpen(false);
+      fetchUsers();
     } catch (error) {
       console.error('Error sending invitation:', error);
       toast.error('Failed to send invitation');
