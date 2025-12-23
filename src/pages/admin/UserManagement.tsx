@@ -4,9 +4,19 @@ import { useAuth, AppRole } from '@/contexts/AuthContext';
 import * as XLSX from 'xlsx';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
-import { Users, Shield, ShieldCheck, UserCheck, Trash2, RefreshCw, Download, Database } from 'lucide-react';
+import { Users, Shield, ShieldCheck, UserCheck, RefreshCw, Download, Database, UserPlus, Mail, Send } from 'lucide-react';
 import { PageContainer } from '@/components/shared/PageContainer';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
 
 interface UserWithRole {
   id: string;
@@ -16,23 +26,35 @@ interface UserWithRole {
   role_id: string | null;
 }
 
+interface Invitation {
+  id: string;
+  email: string;
+  role: AppRole;
+  created_at: string;
+  expires_at: string;
+  accepted_at: string | null;
+}
+
 const ROLE_CONFIG: Record<AppRole, { label: string; icon: React.ElementType; color: string }> = {
   superadmin: { label: 'Super Admin', icon: Database, color: 'text-purple-600' },
   admin: { label: 'Admin', icon: ShieldCheck, color: 'text-red-500' },
-  distributor: { label: 'Distributor', icon: Shield, color: 'text-blue-500' },
   salesperson: { label: 'Salesperson', icon: UserCheck, color: 'text-green-500' },
 };
 
 export default function UserManagement() {
-  const { user: currentUser, isSuperadmin } = useAuth();
+  const { user: currentUser, isSuperadmin, tenantId } = useAuth();
   const [users, setUsers] = useState<UserWithRole[]>([]);
+  const [invitations, setInvitations] = useState<Invitation[]>([]);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState<string | null>(null);
+  const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [inviting, setInviting] = useState(false);
 
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      // Fetch all profiles (admin can see all)
+      // Fetch profiles - RLS will filter based on tenant for admins
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select('id, email, created_at')
@@ -40,26 +62,41 @@ export default function UserManagement() {
 
       if (profilesError) throw profilesError;
 
-      // Fetch all user roles
+      // Fetch user roles - RLS filters by tenant for admins
       const { data: roles, error: rolesError } = await supabase
         .from('user_roles')
         .select('id, user_id, role');
 
       if (rolesError) throw rolesError;
 
-      // Combine data
-      const usersWithRoles: UserWithRole[] = (profiles || []).map(profile => {
-        const userRole = roles?.find(r => r.user_id === profile.id);
-        return {
-          id: profile.id,
-          email: profile.email,
-          created_at: profile.created_at,
-          role: userRole?.role as AppRole | null,
-          role_id: userRole?.id || null,
-        };
-      });
+      // Combine data - only show users that have roles visible to current user
+      const usersWithRoles: UserWithRole[] = (profiles || [])
+        .map(profile => {
+          const userRole = roles?.find(r => r.user_id === profile.id);
+          return {
+            id: profile.id,
+            email: profile.email,
+            created_at: profile.created_at,
+            role: userRole?.role as AppRole | null,
+            role_id: userRole?.id || null,
+          };
+        })
+        // For admins, only show users with roles (their tenant users)
+        // Superadmin sees all
+        .filter(u => isSuperadmin || u.role !== null);
 
       setUsers(usersWithRoles);
+
+      // Fetch pending invitations
+      const { data: invites, error: invitesError } = await supabase
+        .from('user_invitations')
+        .select('*')
+        .is('accepted_at', null)
+        .order('created_at', { ascending: false });
+
+      if (!invitesError && invites) {
+        setInvitations(invites as Invitation[]);
+      }
     } catch (error) {
       console.error('Error fetching users:', error);
       toast.error('Failed to load users');
@@ -79,7 +116,6 @@ export default function UserManagement() {
     try {
       const wb = XLSX.utils.book_new();
 
-      // Define tables to export
       const tables = [
         'distributor_profiles',
         'parties',
@@ -108,13 +144,46 @@ export default function UserManagement() {
     }
   };
 
+  const handleInviteSalesperson = async () => {
+    if (!inviteEmail || !tenantId) return;
+
+    setInviting(true);
+    try {
+      const { error } = await supabase
+        .from('user_invitations')
+        .insert({
+          email: inviteEmail.toLowerCase().trim(),
+          role: 'salesperson',
+          inviter_id: currentUser?.id,
+          tenant_id: tenantId,
+        });
+
+      if (error) {
+        if (error.code === '23505') {
+          toast.error('This email has already been invited');
+        } else {
+          throw error;
+        }
+      } else {
+        toast.success(`Invitation sent to ${inviteEmail}`);
+        setInviteEmail('');
+        setInviteDialogOpen(false);
+        fetchUsers();
+      }
+    } catch (error) {
+      console.error('Error sending invitation:', error);
+      toast.error('Failed to send invitation');
+    } finally {
+      setInviting(false);
+    }
+  };
+
   const handleRoleChange = async (userId: string, newRole: AppRole | 'none') => {
     setUpdating(userId);
     try {
       const userToUpdate = users.find(u => u.id === userId);
 
       if (newRole === 'none') {
-        // Remove role
         if (userToUpdate?.role_id) {
           const { error } = await supabase
             .from('user_roles')
@@ -124,18 +193,35 @@ export default function UserManagement() {
           if (error) throw error;
         }
       } else if (userToUpdate?.role_id) {
-        // Update existing role
+        // For admins assigning salesperson role, ensure tenant_id is set
+        const updateData: any = { role: newRole };
+        if (!isSuperadmin && newRole === 'salesperson') {
+          updateData.tenant_id = tenantId;
+        }
+
         const { error } = await supabase
           .from('user_roles')
-          .update({ role: newRole as any })
+          .update(updateData)
           .eq('id', userToUpdate.role_id);
 
         if (error) throw error;
       } else {
-        // Insert new role
+        // Insert new role with tenant_id
+        const insertData: any = { 
+          user_id: userId, 
+          role: newRole,
+        };
+        
+        // Set tenant_id based on role
+        if (newRole === 'superadmin' || newRole === 'admin') {
+          insertData.tenant_id = userId; // Their own tenant
+        } else if (newRole === 'salesperson') {
+          insertData.tenant_id = tenantId; // Current admin's tenant
+        }
+
         const { error } = await supabase
           .from('user_roles')
-          .insert({ user_id: userId, role: newRole as any });
+          .insert(insertData);
 
         if (error) throw error;
       }
@@ -150,13 +236,28 @@ export default function UserManagement() {
     }
   };
 
-  const pendingUsers = users.filter(u => !u.role);
+  const cancelInvitation = async (invitationId: string) => {
+    try {
+      const { error } = await supabase
+        .from('user_invitations')
+        .delete()
+        .eq('id', invitationId);
+
+      if (error) throw error;
+      toast.success('Invitation cancelled');
+      fetchUsers();
+    } catch (error) {
+      console.error('Error cancelling invitation:', error);
+      toast.error('Failed to cancel invitation');
+    }
+  };
+
   const assignedUsers = users.filter(u => u.role);
 
   return (
     <PageContainer
       title="User Management"
-      description={`Manage user roles and permissions (Current Role: ${currentUser?.email} - ${isSuperadmin ? 'Superadmin' : 'Admin'})`}
+      description={`Manage your team members and their roles`}
       icon={Users}
       actions={
         <>
@@ -170,55 +271,78 @@ export default function UserManagement() {
             <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
             Refresh
           </Button>
+          <Button
+            variant="default"
+            size="sm"
+            onClick={() => setInviteDialogOpen(true)}
+            className="tracking-[-0.06em]"
+          >
+            <UserPlus className="w-4 h-4 mr-2" />
+            Invite Salesperson
+          </Button>
           {isSuperadmin && (
             <Button
-              variant="default"
+              variant="secondary"
               size="sm"
               onClick={handleDownloadData}
               className="tracking-[-0.06em]"
             >
               <Download className="w-4 h-4 mr-2" />
-              Download All Data
+              Export Data
             </Button>
           )}
         </>
       }
     >
-      {/* Pending Verification Section */}
-      {
-        pendingUsers.length > 0 && (
-          <div className="mb-8">
-            <h2 className="text-lg font-semibold text-foreground tracking-[-0.06em] mb-4 flex items-center gap-2">
-              <div className="w-2 h-2 bg-amber-500 rounded-full animate-pulse" />
-              Pending Verification ({pendingUsers.length})
-            </h2>
-            <div className="bg-card border border-border rounded-xl overflow-hidden">
-              <div className="divide-y divide-border">
-                {pendingUsers.map((user) => (
-                  <UserRow
-                    key={user.id}
-                    user={user}
-                    currentUserId={currentUser?.id}
-                    updating={updating}
-                    onRoleChange={handleRoleChange}
-                  />
-                ))}
-              </div>
+      {/* Pending Invitations */}
+      {invitations.length > 0 && (
+        <div className="mb-8">
+          <h2 className="text-lg font-semibold text-foreground tracking-[-0.06em] mb-4 flex items-center gap-2">
+            <Mail className="w-5 h-5 text-amber-500" />
+            Pending Invitations ({invitations.length})
+          </h2>
+          <div className="bg-card border border-border rounded-xl overflow-hidden">
+            <div className="divide-y divide-border">
+              {invitations.map((invite) => (
+                <div key={invite.id} className="flex items-center justify-between p-4 hover:bg-muted/30 transition-colors">
+                  <div className="flex items-center gap-4 min-w-0 flex-1">
+                    <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center text-amber-600">
+                      <Send className="w-5 h-5" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-medium text-foreground truncate tracking-[-0.06em]">
+                        {invite.email}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Invited as {ROLE_CONFIG[invite.role].label} • Expires {new Date(invite.expires_at).toLocaleDateString()}
+                      </p>
+                    </div>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => cancelInvitation(invite.id)}
+                    className="text-destructive hover:text-destructive"
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              ))}
             </div>
           </div>
-        )
-      }
+        </div>
+      )}
 
       {/* Assigned Users Section */}
       <div>
         <h2 className="text-lg font-semibold text-foreground tracking-[-0.06em] mb-4">
-          Assigned Users ({assignedUsers.length})
+          Team Members ({assignedUsers.length})
         </h2>
         <div className="bg-card border border-border rounded-xl overflow-hidden">
           {assignedUsers.length === 0 ? (
             <div className="p-8 text-center text-muted-foreground">
               <Users className="w-12 h-12 mx-auto mb-3 opacity-50" />
-              <p className="text-sm">No users with assigned roles</p>
+              <p className="text-sm">No team members yet. Invite salespersons to get started.</p>
             </div>
           ) : (
             <div className="divide-y divide-border">
@@ -235,7 +359,40 @@ export default function UserManagement() {
           )}
         </div>
       </div>
-    </PageContainer >
+
+      {/* Invite Dialog */}
+      <Dialog open={inviteDialogOpen} onOpenChange={setInviteDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Invite Salesperson</DialogTitle>
+            <DialogDescription>
+              Send an invitation email to add a new salesperson to your team. They will be automatically assigned to your company when they sign up.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="email">Email Address</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="salesperson@example.com"
+                value={inviteEmail}
+                onChange={(e) => setInviteEmail(e.target.value)}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setInviteDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleInviteSalesperson} disabled={!inviteEmail || inviting}>
+              {inviting ? <RefreshCw className="w-4 h-4 mr-2 animate-spin" /> : <Send className="w-4 h-4 mr-2" />}
+              Send Invitation
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </PageContainer>
   );
 }
 
@@ -269,30 +426,32 @@ function UserRow({
             )}
           </p>
           <p className="text-xs text-muted-foreground">
-            Joined {new Date(user.created_at).toLocaleDateString()}
+            {user.role ? ROLE_CONFIG[user.role].label : 'No Role'} • Joined {new Date(user.created_at).toLocaleDateString()}
           </p>
         </div>
       </div>
 
       <div className="flex items-center gap-2">
-        <Select
-          value={user.role || 'none'}
-          onValueChange={(value) => onRoleChange(user.id, value as AppRole | 'none')}
-          disabled={updating === user.id || isCurrentUser}
-        >
-          <SelectTrigger className="w-36 h-9 text-sm tracking-[-0.06em]">
-            <SelectValue placeholder="Select role" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="none" className="text-muted-foreground">
-              No Role
-            </SelectItem>
-            {isSuperadmin && <SelectItem value="superadmin">Super Admin</SelectItem>}
-            <SelectItem value="admin">Admin</SelectItem>
-            <SelectItem value="distributor">Distributor</SelectItem>
-            <SelectItem value="salesperson">Salesperson</SelectItem>
-          </SelectContent>
-        </Select>
+        {/* Only superadmin can change roles */}
+        {isSuperadmin && !isCurrentUser && (
+          <Select
+            value={user.role || 'none'}
+            onValueChange={(value) => onRoleChange(user.id, value as AppRole | 'none')}
+            disabled={updating === user.id}
+          >
+            <SelectTrigger className="w-36 h-9 text-sm tracking-[-0.06em]">
+              <SelectValue placeholder="Select role" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none" className="text-muted-foreground">
+                No Role
+              </SelectItem>
+              <SelectItem value="superadmin">Super Admin</SelectItem>
+              <SelectItem value="admin">Admin</SelectItem>
+              <SelectItem value="salesperson">Salesperson</SelectItem>
+            </SelectContent>
+          </Select>
+        )}
 
         {updating === user.id && (
           <RefreshCw className="w-4 h-4 animate-spin text-muted-foreground" />

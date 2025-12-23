@@ -3425,6 +3425,10 @@ export type Database = {
     }
     Functions: {
       belongs_to_tenant: { Args: { p_tenant_id: string }; Returns: boolean }
+      can_access_distributor_data: {
+        Args: { p_created_by?: string; p_distributor_id: string }
+        Returns: boolean
+      }
       create_gate_inward_atomic: {
         Args: { p_header: Json; p_items: Json }
         Returns: Json

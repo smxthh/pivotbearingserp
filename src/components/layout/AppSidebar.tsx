@@ -69,58 +69,58 @@ const menuGroups: MenuGroup[] = [
         title: 'Dashboard',
         href: '/',
         icon: LayoutDashboard,
-        allowedRoles: ['superadmin', 'admin', 'distributor', 'salesperson']
+        allowedRoles: ['superadmin', 'admin', 'salesperson']
       },
       {
         title: 'Party Master',
         href: '/parties',
         icon: Users,
-        allowedRoles: ['superadmin', 'admin', 'distributor']
+        allowedRoles: ['superadmin', 'admin', 'salesperson']
       },
       {
         title: 'Item Master',
         icon: Package,
-        allowedRoles: ['superadmin', 'admin', 'distributor'],
+        allowedRoles: ['superadmin', 'admin'],
         children: [
-          { title: 'Item Category', href: '/items/categories', icon: Layers, allowedRoles: ['superadmin', 'admin', 'distributor'] },
-          { title: 'Products', href: '/items/products', icon: Boxes, allowedRoles: ['superadmin', 'admin', 'distributor'] },
-          { title: 'Service Items', href: '/items/services', icon: Tags, allowedRoles: ['superadmin', 'admin', 'distributor'] },
-          { title: 'Brand Master', href: '/items/brands', icon: Award, allowedRoles: ['superadmin', 'admin', 'distributor'] },
+          { title: 'Item Category', href: '/items/categories', icon: Layers, allowedRoles: ['superadmin', 'admin'] },
+          { title: 'Products', href: '/items/products', icon: Boxes, allowedRoles: ['superadmin', 'admin'] },
+          { title: 'Service Items', href: '/items/services', icon: Tags, allowedRoles: ['superadmin', 'admin'] },
+          { title: 'Brand Master', href: '/items/brands', icon: Award, allowedRoles: ['superadmin', 'admin'] },
         ],
       },
       {
         title: 'Purchase',
         icon: ShoppingCart,
-        allowedRoles: ['superadmin', 'admin', 'distributor'],
+        allowedRoles: ['superadmin', 'admin'],
         children: [
-          { title: 'Purchase Order', href: '/purchase-orders', icon: ClipboardList, allowedRoles: ['superadmin', 'admin', 'distributor'] },
-          { title: 'Purchase Invoice', href: '/purchase/invoice', icon: Receipt, allowedRoles: ['superadmin', 'admin', 'distributor'] },
+          { title: 'Purchase Order', href: '/purchase-orders', icon: ClipboardList, allowedRoles: ['superadmin', 'admin'] },
+          { title: 'Purchase Invoice', href: '/purchase/invoice', icon: Receipt, allowedRoles: ['superadmin', 'admin'] },
         ],
       },
       {
         title: 'Sales',
         icon: IndianRupee,
-        allowedRoles: ['superadmin', 'admin', 'distributor', 'salesperson'],
+        allowedRoles: ['superadmin', 'admin', 'salesperson'],
         children: [
-          { title: 'Sales Enquiry', href: '/sales/enquiry', icon: FileText, allowedRoles: ['superadmin', 'admin', 'distributor', 'salesperson'] },
-          { title: 'Sales Quotation', href: '/sales/quotation', icon: FilePlus, allowedRoles: ['superadmin', 'admin', 'distributor', 'salesperson'] },
-          { title: 'Sales Order', href: '/sales/order', icon: ClipboardList, allowedRoles: ['superadmin', 'admin', 'distributor', 'salesperson'] },
-          { title: 'Delivery Challan', href: '/sales/challan', icon: Truck, allowedRoles: ['superadmin', 'admin', 'distributor', 'salesperson'] },
-          { title: 'Tax Invoice', href: '/sales/tax-invoice', icon: FileCheck, allowedRoles: ['superadmin', 'admin', 'distributor', 'salesperson'] },
-          { title: 'Price Structure', href: '/sales/price-structure', icon: Tags, allowedRoles: ['superadmin', 'admin', 'distributor'] },
-          { title: 'Sales Zone', href: '/sales/zones', icon: MapPin, allowedRoles: ['superadmin', 'admin', 'distributor'] },
+          { title: 'Sales Enquiry', href: '/sales/enquiry', icon: FileText, allowedRoles: ['superadmin', 'admin', 'salesperson'] },
+          { title: 'Sales Quotation', href: '/sales/quotation', icon: FilePlus, allowedRoles: ['superadmin', 'admin', 'salesperson'] },
+          { title: 'Sales Order', href: '/sales/order', icon: ClipboardList, allowedRoles: ['superadmin', 'admin', 'salesperson'] },
+          { title: 'Delivery Challan', href: '/sales/challan', icon: Truck, allowedRoles: ['superadmin', 'admin', 'salesperson'] },
+          { title: 'Tax Invoice', href: '/sales/tax-invoice', icon: FileCheck, allowedRoles: ['superadmin', 'admin', 'salesperson'] },
+          { title: 'Price Structure', href: '/sales/price-structure', icon: Tags, allowedRoles: ['superadmin', 'admin'] },
+          { title: 'Sales Zone', href: '/sales/zones', icon: MapPin, allowedRoles: ['superadmin', 'admin'] },
         ],
       },
       {
         title: 'Store',
         icon: Warehouse,
-        allowedRoles: ['superadmin', 'admin', 'distributor'],
+        allowedRoles: ['superadmin', 'admin'],
         children: [
-          { title: 'Store Location', href: '/store/location', icon: MapPin, allowedRoles: ['superadmin', 'admin', 'distributor'] },
-          { title: 'Gate Inward', href: '/store/gate-inward', icon: PackageCheck, allowedRoles: ['superadmin', 'admin', 'distributor'] },
-          { title: 'Marking', href: '/store/marking', icon: Stamp, allowedRoles: ['superadmin', 'admin', 'distributor'] },
-          { title: 'Packing', href: '/store/packing', icon: PackageOpen, allowedRoles: ['superadmin', 'admin', 'distributor'] },
-          { title: 'Opening Stock', href: '/store/opening-stock', icon: Archive, allowedRoles: ['superadmin', 'admin', 'distributor'] },
+          { title: 'Store Location', href: '/store/location', icon: MapPin, allowedRoles: ['superadmin', 'admin'] },
+          { title: 'Gate Inward', href: '/store/gate-inward', icon: PackageCheck, allowedRoles: ['superadmin', 'admin'] },
+          { title: 'Marking', href: '/store/marking', icon: Stamp, allowedRoles: ['superadmin', 'admin'] },
+          { title: 'Packing', href: '/store/packing', icon: PackageOpen, allowedRoles: ['superadmin', 'admin'] },
+          { title: 'Opening Stock', href: '/store/opening-stock', icon: Archive, allowedRoles: ['superadmin', 'admin'] },
         ],
       },
     ]
@@ -131,31 +131,31 @@ const menuGroups: MenuGroup[] = [
       {
         title: 'Accounting',
         icon: BookOpen,
-        allowedRoles: ['superadmin', 'admin', 'distributor'],
+        allowedRoles: ['superadmin', 'admin'],
         children: [
-          { title: 'Ledger', href: '/accounting/ledger', icon: BookOpen, allowedRoles: ['superadmin', 'admin', 'distributor'] },
-          { title: 'Debit Note', href: '/accounting/debit-note', icon: ArrowUpCircle, allowedRoles: ['superadmin', 'admin', 'distributor'] },
-          { title: 'Credit Note', href: '/accounting/credit-note', icon: ArrowDownCircle, allowedRoles: ['superadmin', 'admin', 'distributor'] },
-          { title: 'GST Expense', href: '/accounting/gst-expense', icon: Calculator, allowedRoles: ['superadmin', 'admin', 'distributor'] },
-          { title: 'GST Income', href: '/accounting/gst-income', icon: CreditCard, allowedRoles: ['superadmin', 'admin', 'distributor'] },
-          { title: 'GST Payment', href: '/accounting/gst-payment', icon: Wallet, allowedRoles: ['superadmin', 'admin', 'distributor'] },
-          { title: 'TCS/TDS Payment', href: '/accounting/tcs-tds-payment', icon: HandCoins, allowedRoles: ['superadmin', 'admin', 'distributor'] },
-          { title: 'Journal Entry', href: '/accounting/journal-entry', icon: PenLine, allowedRoles: ['superadmin', 'admin', 'distributor'] },
-          { title: 'Payment Voucher', href: '/accounting/payment-voucher', icon: FileText, allowedRoles: ['superadmin', 'admin', 'distributor'] },
-          { title: 'Receivables', href: '/accounting/receivables', icon: ArrowDownCircle, allowedRoles: ['superadmin', 'admin', 'distributor'] },
-          { title: 'Payables', href: '/accounting/payables', icon: ArrowUpCircle, allowedRoles: ['superadmin', 'admin', 'distributor'] },
+          { title: 'Ledger', href: '/accounting/ledger', icon: BookOpen, allowedRoles: ['superadmin', 'admin'] },
+          { title: 'Debit Note', href: '/accounting/debit-note', icon: ArrowUpCircle, allowedRoles: ['superadmin', 'admin'] },
+          { title: 'Credit Note', href: '/accounting/credit-note', icon: ArrowDownCircle, allowedRoles: ['superadmin', 'admin'] },
+          { title: 'GST Expense', href: '/accounting/gst-expense', icon: Calculator, allowedRoles: ['superadmin', 'admin'] },
+          { title: 'GST Income', href: '/accounting/gst-income', icon: CreditCard, allowedRoles: ['superadmin', 'admin'] },
+          { title: 'GST Payment', href: '/accounting/gst-payment', icon: Wallet, allowedRoles: ['superadmin', 'admin'] },
+          { title: 'TCS/TDS Payment', href: '/accounting/tcs-tds-payment', icon: HandCoins, allowedRoles: ['superadmin', 'admin'] },
+          { title: 'Journal Entry', href: '/accounting/journal-entry', icon: PenLine, allowedRoles: ['superadmin', 'admin'] },
+          { title: 'Payment Voucher', href: '/accounting/payment-voucher', icon: FileText, allowedRoles: ['superadmin', 'admin'] },
+          { title: 'Receivables', href: '/accounting/receivables', icon: ArrowDownCircle, allowedRoles: ['superadmin', 'admin'] },
+          { title: 'Payables', href: '/accounting/payables', icon: ArrowUpCircle, allowedRoles: ['superadmin', 'admin'] },
         ],
       },
       {
         title: 'Reports',
         icon: BarChart3,
-        allowedRoles: ['superadmin', 'admin', 'distributor'],
+        allowedRoles: ['superadmin', 'admin'],
         children: [
-          { title: 'Sales Report', href: '/reports/sales', icon: TrendingUp, allowedRoles: ['superadmin', 'admin', 'distributor'] },
-          { title: 'Purchase Report', href: '/reports/purchase', icon: ShoppingCart, allowedRoles: ['superadmin', 'admin', 'distributor'] },
-          { title: 'Top Customers', href: '/reports/customers', icon: Users, allowedRoles: ['superadmin', 'admin', 'distributor'] },
-          { title: 'Top Products', href: '/reports/products', icon: PieChart, allowedRoles: ['superadmin', 'admin', 'distributor'] },
-          { title: 'State-wise Sales', href: '/reports/states', icon: MapPin, allowedRoles: ['superadmin', 'admin', 'distributor'] },
+          { title: 'Sales Report', href: '/reports/sales', icon: TrendingUp, allowedRoles: ['superadmin', 'admin'] },
+          { title: 'Purchase Report', href: '/reports/purchase', icon: ShoppingCart, allowedRoles: ['superadmin', 'admin'] },
+          { title: 'Top Customers', href: '/reports/customers', icon: Users, allowedRoles: ['superadmin', 'admin'] },
+          { title: 'Top Products', href: '/reports/products', icon: PieChart, allowedRoles: ['superadmin', 'admin'] },
+          { title: 'State-wise Sales', href: '/reports/states', icon: MapPin, allowedRoles: ['superadmin', 'admin'] },
         ],
       },
     ]
@@ -166,16 +166,16 @@ const menuGroups: MenuGroup[] = [
       {
         title: 'Configuration',
         icon: Settings,
-        allowedRoles: ['superadmin', 'admin', 'distributor'],
+        allowedRoles: ['superadmin', 'admin'],
         children: [
-          { title: 'Terms', href: '/config/terms', icon: FileText, allowedRoles: ['superadmin', 'admin', 'distributor'] },
-          { title: 'Transport', href: '/config/transport', icon: Truck, allowedRoles: ['superadmin', 'admin', 'distributor'] },
-          { title: 'HSN Master', href: '/config/hsn', icon: Hash, allowedRoles: ['superadmin', 'admin', 'distributor'] },
-          { title: 'Tax Master', href: '/config/tax', icon: Percent, allowedRoles: ['superadmin', 'admin', 'distributor'] },
-          { title: 'Expense Master', href: '/config/expense', icon: Receipt, allowedRoles: ['superadmin', 'admin', 'distributor'] },
-          { title: 'Group Master', href: '/config/group', icon: Folder, allowedRoles: ['superadmin', 'admin', 'distributor'] },
-          { title: 'Tax Class', href: '/config/tax-class', icon: ListTree, allowedRoles: ['superadmin', 'admin', 'distributor'] },
-          { title: 'Voucher Prefix', href: '/config/voucher-prefix', icon: BookMarked, allowedRoles: ['superadmin', 'admin', 'distributor'] },
+          { title: 'Terms', href: '/config/terms', icon: FileText, allowedRoles: ['superadmin', 'admin'] },
+          { title: 'Transport', href: '/config/transport', icon: Truck, allowedRoles: ['superadmin', 'admin'] },
+          { title: 'HSN Master', href: '/config/hsn', icon: Hash, allowedRoles: ['superadmin', 'admin'] },
+          { title: 'Tax Master', href: '/config/tax', icon: Percent, allowedRoles: ['superadmin', 'admin'] },
+          { title: 'Expense Master', href: '/config/expense', icon: Receipt, allowedRoles: ['superadmin', 'admin'] },
+          { title: 'Group Master', href: '/config/group', icon: Folder, allowedRoles: ['superadmin', 'admin'] },
+          { title: 'Tax Class', href: '/config/tax-class', icon: ListTree, allowedRoles: ['superadmin', 'admin'] },
+          { title: 'Voucher Prefix', href: '/config/voucher-prefix', icon: BookMarked, allowedRoles: ['superadmin', 'admin'] },
         ],
       },
     ]
@@ -193,13 +193,13 @@ const menuGroups: MenuGroup[] = [
         title: 'Data Export',
         href: '/admin/export',
         icon: Archive,
-        allowedRoles: ['superadmin'] // Only SuperAdmin can download data
+        allowedRoles: ['superadmin']
       },
       {
         title: 'My Profile',
         href: '/profile',
         icon: Settings,
-        allowedRoles: ['superadmin', 'admin', 'distributor', 'salesperson']
+        allowedRoles: ['superadmin', 'admin', 'salesperson']
       },
     ]
   }
@@ -438,65 +438,60 @@ export function AppSidebar() {
         className="fixed top-[12px] left-4 z-50 w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-primary transition-all duration-200 shadow-md group border-b-2"
         title="Expand Sidebar"
       >
-        <PanelLeftClose className="w-5 h-5 rotate-180 transition-transform group-hover:translate-x-0.5" strokeWidth={1.5} />
+        <PanelLeftClose className="h-5 w-5 rotate-180" strokeWidth={1.5} />
       </button>
     );
   }
 
   return (
-    <>
-      {/* Mobile overlay */}
-      <div
-        className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 lg:hidden"
-        onClick={toggleSidebar}
-      />
-
-      {/* Sidebar */}
-      <aside className="fixed lg:static inset-y-0 left-0 z-50 w-64 flex flex-col">
-        <div className="m-2 flex-1 bg-gray-50 border border-slate-300 rounded-r-2xl shadow-sm flex flex-col overflow-hidden">
-          {/* Header with Company Name */}
-          <div className="h-16 px-4 flex items-center justify-between gap-3 bg-gray-50 border-b border-slate-200/50">
-            {/* Company Name - truncates if too long */}
-            <div className="flex-1 min-w-0">
-              <h2 className="text-sm font-semibold text-slate-700 truncate tracking-tight">
-                {profile?.company_name || 'Pivot ERP'}
-              </h2>
-            </div>
-
-            {/* Toggle Button */}
-            <button
-              onClick={toggleSidebar}
-              className="flex-shrink-0 w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-primary transition-all duration-200 shadow-sm group border-b-2"
-              title="Collapse Sidebar"
-            >
-              <PanelLeftClose className="w-5 h-5 transition-transform group-hover:-translate-x-0.5" strokeWidth={1.5} />
-            </button>
+    <aside className="fixed left-0 top-0 bottom-0 w-[260px] bg-white border-r border-slate-200 flex flex-col z-40 shadow-sm">
+      {/* Header */}
+      <div className="h-16 flex items-center px-4 border-b border-slate-100">
+        <div className="flex items-center gap-3 flex-1 min-w-0">
+          <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+            <span className="text-primary font-bold text-lg">P</span>
           </div>
-
-          {/* Navigation */}
-          <nav className="flex-1 overflow-y-auto py-4 px-2 scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent">
-            {menuGroups.map((group) => (
-              <MenuSection
-                key={group.label}
-                label={group.label}
-                items={group.items}
-                expandedGroups={expandedGroups}
-                toggleGroup={toggleGroup}
-                isActive={isActive}
-                canAccess={canAccess}
-                isGroupActive={isGroupActive}
-              />
-            ))}
-          </nav>
-
-          {/* Footer */}
-          <div className="px-4 py-3 border-t border-slate-200 bg-gray-50">
-            <p className="text-[10px] text-slate-400 font-medium text-center">
-              v1.0
+          <div className="min-w-0 flex-1">
+            <h1 className="text-sm font-semibold text-slate-800 truncate">
+              {profile?.company_name || 'Pivot ERP'}
+            </h1>
+            <p className="text-[10px] text-slate-400 uppercase tracking-wider">
+              Enterprise
             </p>
           </div>
         </div>
-      </aside>
-    </>
+        <button
+          onClick={toggleSidebar}
+          className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-all duration-200"
+          title="Collapse Sidebar"
+        >
+          <PanelLeftClose className="h-4 w-4" strokeWidth={1.5} />
+        </button>
+      </div>
+
+      {/* Navigation */}
+      <nav className="flex-1 overflow-y-auto py-4 px-2">
+        {menuGroups.map((group) => (
+          <MenuSection
+            key={group.label}
+            label={group.label}
+            items={group.items}
+            expandedGroups={expandedGroups}
+            toggleGroup={toggleGroup}
+            isActive={isActive}
+            canAccess={canAccess}
+            isGroupActive={isGroupActive}
+          />
+        ))}
+      </nav>
+
+      {/* Footer */}
+      <div className="p-3 border-t border-slate-100">
+        <div className="flex items-center gap-2 px-2 py-2 text-[11px] text-slate-400">
+          <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+          <span>System Online</span>
+        </div>
+      </div>
+    </aside>
   );
 }
