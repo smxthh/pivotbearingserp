@@ -8,8 +8,13 @@ interface ProtectedRouteProps {
 }
 
 export function ProtectedRoute({ children, requireRole = true }: ProtectedRouteProps) {
-  const { user, loading, hasRole } = useAuth();
+  const { user, loading, hasRole, isLoggingOut } = useAuth();
   const location = useLocation();
+
+  // If logging out, redirect directly to auth - no loading, no pending
+  if (isLoggingOut) {
+    return <Navigate to="/auth" replace />;
+  }
 
   if (loading) {
     return (
