@@ -3541,6 +3541,7 @@ export type Database = {
       }
       is_admin: { Args: never; Returns: boolean }
       is_superadmin: { Args: never; Returns: boolean }
+      is_superadmin_user: { Args: never; Returns: boolean }
       is_tenant_superadmin: { Args: { p_tenant_id: string }; Returns: boolean }
       preview_next_document_number: {
         Args: {
