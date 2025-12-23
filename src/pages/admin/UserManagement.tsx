@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
-import { Users, Shield, ShieldCheck, UserCheck, RefreshCw, Download, Database, UserPlus, Mail, Send } from 'lucide-react';
+import { Users, Shield, ShieldCheck, UserCheck, RefreshCw, Download, Database, UserPlus, Mail, Send, Trash2, UserX } from 'lucide-react';
 import { PageContainer } from '@/components/shared/PageContainer';
 import {
   Dialog,
@@ -81,8 +81,7 @@ export default function UserManagement() {
             role_id: userRole?.id || null,
           };
         })
-        // For admins, only show users with roles (their tenant users)
-        // Superadmin sees all
+        // Superadmin sees all users, admins only see users with roles in their tenant
         .filter(u => isSuperadmin || u.role !== null);
 
       setUsers(usersWithRoles);
@@ -294,7 +293,35 @@ export default function UserManagement() {
     }
   };
 
+  const deleteUser = async (userId: string, email: string) => {
+    if (!isSuperadmin) return;
+    
+    if (!confirm(`Are you sure you want to delete user "${email}"? This action cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      // First delete any user_roles
+      await supabase.from('user_roles').delete().eq('user_id', userId);
+      
+      // Delete profile
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .delete()
+        .eq('id', userId);
+
+      if (profileError) throw profileError;
+
+      toast.success(`User ${email} deleted successfully`);
+      fetchUsers();
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      toast.error('Failed to delete user. The user may need to be deleted from Supabase Auth directly.');
+    }
+  };
+
   const assignedUsers = users.filter(u => u.role);
+  const unassignedUsers = users.filter(u => !u.role);
 
   return (
     <PageContainer
@@ -395,12 +422,37 @@ export default function UserManagement() {
                   currentUserId={currentUser?.id}
                   updating={updating}
                   onRoleChange={handleRoleChange}
+                  onDelete={deleteUser}
                 />
               ))}
             </div>
           )}
         </div>
       </div>
+
+      {/* Unassigned Users Section - Only visible to Superadmin */}
+      {isSuperadmin && unassignedUsers.length > 0 && (
+        <div className="mt-8">
+          <h2 className="text-lg font-semibold text-foreground tracking-[-0.06em] mb-4 flex items-center gap-2">
+            <UserX className="w-5 h-5 text-destructive" />
+            Unassigned Users ({unassignedUsers.length})
+          </h2>
+          <div className="bg-card border border-destructive/20 rounded-xl overflow-hidden">
+            <div className="divide-y divide-border">
+              {unassignedUsers.map((user) => (
+                <UserRow
+                  key={user.id}
+                  user={user}
+                  currentUserId={currentUser?.id}
+                  updating={updating}
+                  onRoleChange={handleRoleChange}
+                  onDelete={deleteUser}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Invite Dialog */}
       <Dialog open={inviteDialogOpen} onOpenChange={setInviteDialogOpen}>
@@ -443,16 +495,18 @@ function UserRow({
   currentUserId,
   updating,
   onRoleChange,
+  onDelete,
 }: {
   user: UserWithRole;
   currentUserId?: string;
   updating: string | null;
   onRoleChange: (userId: string, role: AppRole | 'none') => void;
+  onDelete: (userId: string, email: string) => void;
 }) {
   const { isSuperadmin } = useAuth();
   const isCurrentUser = user.id === currentUserId;
-  const RoleIcon = user.role ? ROLE_CONFIG[user.role].icon : Users;
-  const roleColor = user.role ? ROLE_CONFIG[user.role].color : 'text-muted-foreground';
+  const RoleIcon = user.role ? ROLE_CONFIG[user.role].icon : UserX;
+  const roleColor = user.role ? ROLE_CONFIG[user.role].color : 'text-destructive';
 
   return (
     <div className="flex items-center justify-between p-4 hover:bg-muted/30 transition-colors">
@@ -468,7 +522,7 @@ function UserRow({
             )}
           </p>
           <p className="text-xs text-muted-foreground">
-            {user.role ? ROLE_CONFIG[user.role].label : 'No Role'} • Joined {new Date(user.created_at).toLocaleDateString()}
+            {user.role ? ROLE_CONFIG[user.role].label : 'No Role Assigned'} • Joined {new Date(user.created_at).toLocaleDateString()}
           </p>
         </div>
       </div>
@@ -493,6 +547,19 @@ function UserRow({
               <SelectItem value="salesperson">Salesperson</SelectItem>
             </SelectContent>
           </Select>
+        )}
+
+        {/* Delete button for superadmin */}
+        {isSuperadmin && !isCurrentUser && (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => onDelete(user.id, user.email)}
+            className="h-9 w-9 text-destructive hover:text-destructive hover:bg-destructive/10"
+            title="Delete user"
+          >
+            <Trash2 className="w-4 h-4" />
+          </Button>
         )}
 
         {updating === user.id && (
