@@ -49,6 +49,7 @@ export default function UserManagement() {
   const [updating, setUpdating] = useState<string | null>(null);
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
   const [inviteEmail, setInviteEmail] = useState('');
+  const [invitePassword, setInvitePassword] = useState('');
   const [inviting, setInviting] = useState(false);
 
   const fetchUsers = async () => {
@@ -144,79 +145,59 @@ export default function UserManagement() {
   };
 
   const handleInviteSalesperson = async () => {
-    if (!inviteEmail || !tenantId) return;
+    if (!inviteEmail || !invitePassword || !tenantId) return;
+
+    if (invitePassword.length < 6) {
+      toast.error('Password must be at least 6 characters');
+      return;
+    }
 
     setInviting(true);
     try {
       const emailLower = inviteEmail.toLowerCase().trim();
-      
-      // Delete any existing invitation for this email (allows re-invitations)
-      await supabase
-        .from('user_invitations')
-        .delete()
-        .eq('email', emailLower);
 
-      // Create a new invitation record
-      const { data: invitation, error } = await supabase
-        .from('user_invitations')
-        .insert({
-          email: emailLower,
-          role: 'salesperson',
-          inviter_id: currentUser?.id,
-          tenant_id: tenantId,
-        })
-        .select()
-        .single();
-
-      if (error) {
-        throw error;
-      }
-
-      // Get inviter name and company name for the email
-      const { data: inviterProfile } = await supabase
-        .from('profiles')
-        .select('email')
-        .eq('id', currentUser?.id)
-        .single();
-
+      // Get company name for the notification
       const { data: distributorProfile } = await supabase
         .from('distributor_profiles')
         .select('company_name')
         .eq('user_id', tenantId)
         .single();
 
-      const inviterName = inviterProfile?.email || 'Your admin';
       const companyName = distributorProfile?.company_name || 'the company';
-      
-      // Build the signup URL with invitation token
-      const signupUrl = `${window.location.origin}/auth?invitation=${invitation.id}`;
 
-      // Send invitation email via edge function
-      const { data: emailResult, error: emailError } = await supabase.functions.invoke('send-invitation', {
+      // Call edge function to create salesperson with password and role
+      const { data, error } = await supabase.functions.invoke('create-salesperson', {
         body: {
-          email: inviteEmail.toLowerCase().trim(),
-          inviterName,
-          companyName,
-          signupUrl,
+          email: emailLower,
+          password: invitePassword,
+          tenantId: tenantId,
+          companyName: companyName,
+          inviterEmail: currentUser?.email,
         },
       });
 
-      if (emailError) {
-        console.error('Error sending invitation email:', emailError);
-        toast.warning(`Invitation created but email failed to send. The user can still sign up using this link: ${signupUrl}`);
-      } else if (emailResult?.success) {
-        toast.success(`Invitation email sent to ${inviteEmail}`);
-      } else {
-        console.error('Email send failed:', emailResult);
-        toast.warning(`Invitation created but email may not have been sent. Share this link with them: ${signupUrl}`);
+      if (error) {
+        console.error('Edge function error:', error);
+        throw error;
       }
 
+      if (data?.error) {
+        throw new Error(data.error);
+      }
+
+      toast.success(
+        `Salesperson account created for ${inviteEmail}. Share the login credentials with them.`,
+        { duration: 6000 }
+      );
+
       setInviteEmail('');
+      setInvitePassword('');
       setInviteDialogOpen(false);
       fetchUsers();
-    } catch (error) {
-      console.error('Error sending invitation:', error);
-      toast.error('Failed to send invitation');
+    } catch (error: unknown) {
+      console.error('Error creating salesperson:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to create salesperson';
+      toast.error(errorMessage);
     } finally {
       setInviting(false);
     }
@@ -350,7 +331,7 @@ export default function UserManagement() {
             className="tracking-[-0.06em]"
           >
             <UserPlus className="w-4 h-4 mr-2" />
-            Invite Salesperson
+            Add Salesperson
           </Button>
           {isSuperadmin && (
             <Button
@@ -461,9 +442,9 @@ export default function UserManagement() {
       <Dialog open={inviteDialogOpen} onOpenChange={setInviteDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Invite Salesperson</DialogTitle>
+            <DialogTitle>Add Salesperson</DialogTitle>
             <DialogDescription>
-              Send an invitation email to add a new salesperson to your team. They will be automatically assigned to your company when they sign up.
+              Create a salesperson account. They will be automatically assigned to your company and can log in immediately with the provided credentials.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
@@ -477,14 +458,30 @@ export default function UserManagement() {
                 onChange={(e) => setInviteEmail(e.target.value)}
               />
             </div>
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                placeholder="Enter password (min 6 characters)"
+                value={invitePassword}
+                onChange={(e) => setInvitePassword(e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground">
+                Share this password with the salesperson so they can log in.
+              </p>
+            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setInviteDialogOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={handleInviteSalesperson} disabled={!inviteEmail || inviting}>
-              {inviting ? <RefreshCw className="w-4 h-4 mr-2 animate-spin" /> : <Send className="w-4 h-4 mr-2" />}
-              Send Invitation
+            <Button 
+              onClick={handleInviteSalesperson} 
+              disabled={!inviteEmail || !invitePassword || invitePassword.length < 6 || inviting}
+            >
+              {inviting ? <RefreshCw className="w-4 h-4 mr-2 animate-spin" /> : <UserPlus className="w-4 h-4 mr-2" />}
+              Create Account
             </Button>
           </DialogFooter>
         </DialogContent>
