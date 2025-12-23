@@ -120,17 +120,17 @@ const App = () => (
                         <Route
                           path="/profile"
                           element={
-                            <RoleBasedRoute allowedRoles={['admin', 'distributor', 'salesperson']}>
+                            <RoleBasedRoute allowedRoles={['admin', 'salesperson']}>
                               <Profile />
                             </RoleBasedRoute>
                           }
                         />
 
-                        {/* Admin, Distributor & Salesperson Routes */}
+                        {/* Admin & Salesperson Routes */}
                         <Route
                           path="/setup"
                           element={
-                            <RoleBasedRoute allowedRoles={['admin', 'distributor']}>
+                            <RoleBasedRoute allowedRoles={['admin']}>
                               <DistributorSetup />
                             </RoleBasedRoute>
                           }
@@ -138,7 +138,7 @@ const App = () => (
                         <Route
                           path="/parties"
                           element={
-                            <RoleBasedRoute allowedRoles={['admin', 'distributor', 'salesperson']}>
+                            <RoleBasedRoute allowedRoles={['admin', 'salesperson']}>
                               <PartyList />
                             </RoleBasedRoute>
                           }
@@ -146,7 +146,7 @@ const App = () => (
                         <Route
                           path="/parties/new"
                           element={
-                            <RoleBasedRoute allowedRoles={['admin', 'distributor', 'salesperson']}>
+                            <RoleBasedRoute allowedRoles={['admin', 'salesperson']}>
                               <PartyForm />
                             </RoleBasedRoute>
                           }
@@ -154,7 +154,7 @@ const App = () => (
                         <Route
                           path="/parties/:id"
                           element={
-                            <RoleBasedRoute allowedRoles={['admin', 'distributor', 'salesperson']}>
+                            <RoleBasedRoute allowedRoles={['admin', 'salesperson']}>
                               <PartyForm />
                             </RoleBasedRoute>
                           }
@@ -162,7 +162,7 @@ const App = () => (
                         <Route
                           path="/items"
                           element={
-                            <RoleBasedRoute allowedRoles={['admin', 'distributor']}>
+                            <RoleBasedRoute allowedRoles={['admin']}>
                               <ItemList />
                             </RoleBasedRoute>
                           }
@@ -170,7 +170,7 @@ const App = () => (
                         <Route
                           path="/items/new"
                           element={
-                            <RoleBasedRoute allowedRoles={['admin', 'distributor']}>
+                            <RoleBasedRoute allowedRoles={['admin']}>
                               <ItemForm />
                             </RoleBasedRoute>
                           }
@@ -178,7 +178,7 @@ const App = () => (
                         <Route
                           path="/items/:id"
                           element={
-                            <RoleBasedRoute allowedRoles={['admin', 'distributor']}>
+                            <RoleBasedRoute allowedRoles={['admin']}>
                               <ItemForm />
                             </RoleBasedRoute>
                           }
@@ -186,7 +186,7 @@ const App = () => (
                         <Route
                           path="/items/categories"
                           element={
-                            <RoleBasedRoute allowedRoles={['admin', 'distributor']}>
+                            <RoleBasedRoute allowedRoles={['admin']}>
                               <ItemCategoryPage />
                             </RoleBasedRoute>
                           }
@@ -194,7 +194,7 @@ const App = () => (
                         <Route
                           path="/items/products"
                           element={
-                            <RoleBasedRoute allowedRoles={['admin', 'distributor']}>
+                            <RoleBasedRoute allowedRoles={['admin']}>
                               <ProductsPage />
                             </RoleBasedRoute>
                           }
@@ -202,7 +202,7 @@ const App = () => (
                         <Route
                           path="/items/services"
                           element={
-                            <RoleBasedRoute allowedRoles={['admin', 'distributor']}>
+                            <RoleBasedRoute allowedRoles={['admin']}>
                               <ServiceItemsPage />
                             </RoleBasedRoute>
                           }
@@ -210,17 +210,17 @@ const App = () => (
                         <Route
                           path="/items/brands"
                           element={
-                            <RoleBasedRoute allowedRoles={['admin', 'distributor']}>
+                            <RoleBasedRoute allowedRoles={['admin']}>
                               <BrandMasterPage />
                             </RoleBasedRoute>
                           }
                         />
 
-                        {/* Purchase Order - Admin & Distributor */}
+                        {/* Purchase Order - Admin */}
                         <Route
                           path="/purchase-orders"
                           element={
-                            <RoleBasedRoute allowedRoles={['admin', 'distributor']}>
+                            <RoleBasedRoute allowedRoles={['admin']}>
                               <PurchaseOrderPage />
                             </RoleBasedRoute>
                           }
@@ -230,7 +230,7 @@ const App = () => (
                         <Route
                           path="/sales/zones"
                           element={
-                            <RoleBasedRoute allowedRoles={['admin', 'distributor', 'salesperson']}>
+                            <RoleBasedRoute allowedRoles={['admin', 'salesperson']}>
                               <SalesZonePage />
                             </RoleBasedRoute>
                           }
@@ -238,7 +238,7 @@ const App = () => (
                         <Route
                           path="/sales/price-structure"
                           element={
-                            <RoleBasedRoute allowedRoles={['admin', 'distributor', 'salesperson']}>
+                            <RoleBasedRoute allowedRoles={['admin', 'salesperson']}>
                               <PriceStructurePage />
                             </RoleBasedRoute>
                           }
@@ -246,7 +246,7 @@ const App = () => (
                         <Route
                           path="/sales/new"
                           element={
-                            <RoleBasedRoute allowedRoles={['admin', 'distributor', 'salesperson']}>
+                            <RoleBasedRoute allowedRoles={['admin', 'salesperson']}>
                               <SalesForm />
                             </RoleBasedRoute>
                           }
@@ -254,7 +254,7 @@ const App = () => (
                         <Route
                           path="/sales/enquiry"
                           element={
-                            <RoleBasedRoute allowedRoles={['admin', 'distributor', 'salesperson']}>
+                            <RoleBasedRoute allowedRoles={['admin', 'salesperson']}>
                               <SalesEnquiryPage />
                             </RoleBasedRoute>
                           }
@@ -262,7 +262,7 @@ const App = () => (
                         <Route
                           path="/sales/quotation"
                           element={
-                            <RoleBasedRoute allowedRoles={['admin', 'distributor', 'salesperson']}>
+                            <RoleBasedRoute allowedRoles={['admin', 'salesperson']}>
                               <SalesQuotationPage />
                             </RoleBasedRoute>
                           }
@@ -270,7 +270,7 @@ const App = () => (
                         <Route
                           path="/sales/order"
                           element={
-                            <RoleBasedRoute allowedRoles={['admin', 'distributor', 'salesperson']}>
+                            <RoleBasedRoute allowedRoles={['admin', 'salesperson']}>
                               <SalesOrderPage />
                             </RoleBasedRoute>
                           }
@@ -278,17 +278,17 @@ const App = () => (
                         <Route
                           path="/sales/challan"
                           element={
-                            <RoleBasedRoute allowedRoles={['admin', 'distributor', 'salesperson']}>
+                            <RoleBasedRoute allowedRoles={['admin', 'salesperson']}>
                               <DeliveryChallanPage />
                             </RoleBasedRoute>
                           }
                         />
 
-                        {/* Accounting - Admin & Distributor */}
+                        {/* Accounting - Admin */}
                         <Route
                           path="/accounting/ledger"
                           element={
-                            <RoleBasedRoute allowedRoles={['admin', 'distributor']}>
+                            <RoleBasedRoute allowedRoles={['admin']}>
                               <LedgerPage />
                             </RoleBasedRoute>
                           }
@@ -296,7 +296,7 @@ const App = () => (
                         <Route
                           path="/purchase/invoice"
                           element={
-                            <RoleBasedRoute allowedRoles={['admin', 'distributor']}>
+                            <RoleBasedRoute allowedRoles={['admin']}>
                               <PurchaseInvoicePage />
                             </RoleBasedRoute>
                           }
@@ -304,7 +304,7 @@ const App = () => (
                         <Route
                           path="/accounting/debit-note"
                           element={
-                            <RoleBasedRoute allowedRoles={['admin', 'distributor']}>
+                            <RoleBasedRoute allowedRoles={['admin']}>
                               <DebitNotePage />
                             </RoleBasedRoute>
                           }
@@ -312,7 +312,7 @@ const App = () => (
                         <Route
                           path="/sales/tax-invoice"
                           element={
-                            <RoleBasedRoute allowedRoles={['admin', 'distributor', 'salesperson']}>
+                            <RoleBasedRoute allowedRoles={['admin', 'salesperson']}>
                               <TaxInvoicePage />
                             </RoleBasedRoute>
                           }
@@ -320,7 +320,7 @@ const App = () => (
                         <Route
                           path="/accounting/credit-note"
                           element={
-                            <RoleBasedRoute allowedRoles={['admin', 'distributor']}>
+                            <RoleBasedRoute allowedRoles={['admin']}>
                               <CreditNotePage />
                             </RoleBasedRoute>
                           }
@@ -328,7 +328,7 @@ const App = () => (
                         <Route
                           path="/accounting/gst-expense"
                           element={
-                            <RoleBasedRoute allowedRoles={['admin', 'distributor']}>
+                            <RoleBasedRoute allowedRoles={['admin']}>
                               <GSTExpensePage />
                             </RoleBasedRoute>
                           }
@@ -336,7 +336,7 @@ const App = () => (
                         <Route
                           path="/accounting/gst-income"
                           element={
-                            <RoleBasedRoute allowedRoles={['admin', 'distributor']}>
+                            <RoleBasedRoute allowedRoles={['admin']}>
                               <GSTIncomePage />
                             </RoleBasedRoute>
                           }
@@ -344,7 +344,7 @@ const App = () => (
                         <Route
                           path="/accounting/gst-payment"
                           element={
-                            <RoleBasedRoute allowedRoles={['admin', 'distributor']}>
+                            <RoleBasedRoute allowedRoles={['admin']}>
                               <GSTPaymentPage />
                             </RoleBasedRoute>
                           }
@@ -352,7 +352,7 @@ const App = () => (
                         <Route
                           path="/accounting/tcs-tds-payment"
                           element={
-                            <RoleBasedRoute allowedRoles={['admin', 'distributor']}>
+                            <RoleBasedRoute allowedRoles={['admin']}>
                               <TCSTDSPaymentPage />
                             </RoleBasedRoute>
                           }
@@ -360,7 +360,7 @@ const App = () => (
                         <Route
                           path="/accounting/journal-entry"
                           element={
-                            <RoleBasedRoute allowedRoles={['admin', 'distributor']}>
+                            <RoleBasedRoute allowedRoles={['admin']}>
                               <JournalEntryPage />
                             </RoleBasedRoute>
                           }
@@ -368,7 +368,7 @@ const App = () => (
                         <Route
                           path="/accounting/payment-voucher"
                           element={
-                            <RoleBasedRoute allowedRoles={['admin', 'distributor']}>
+                            <RoleBasedRoute allowedRoles={['admin']}>
                               <PaymentVoucherPage />
                             </RoleBasedRoute>
                           }
@@ -376,7 +376,7 @@ const App = () => (
                         <Route
                           path="/accounting/receivables"
                           element={
-                            <RoleBasedRoute allowedRoles={['admin', 'distributor']}>
+                            <RoleBasedRoute allowedRoles={['admin']}>
                               <Receivables />
                             </RoleBasedRoute>
                           }
@@ -384,17 +384,17 @@ const App = () => (
                         <Route
                           path="/accounting/payables"
                           element={
-                            <RoleBasedRoute allowedRoles={['admin', 'distributor']}>
+                            <RoleBasedRoute allowedRoles={['admin']}>
                               <Payables />
                             </RoleBasedRoute>
                           }
                         />
 
-                        {/* Reports - Admin & Distributor */}
+                        {/* Reports - Admin */}
                         <Route
                           path="/reports/sales"
                           element={
-                            <RoleBasedRoute allowedRoles={['admin', 'distributor']}>
+                            <RoleBasedRoute allowedRoles={['admin']}>
                               <SalesReport />
                             </RoleBasedRoute>
                           }
@@ -402,7 +402,7 @@ const App = () => (
                         <Route
                           path="/reports/purchase"
                           element={
-                            <RoleBasedRoute allowedRoles={['admin', 'distributor']}>
+                            <RoleBasedRoute allowedRoles={['admin']}>
                               <PurchaseReport />
                             </RoleBasedRoute>
                           }
@@ -410,7 +410,7 @@ const App = () => (
                         <Route
                           path="/reports/customers"
                           element={
-                            <RoleBasedRoute allowedRoles={['admin', 'distributor']}>
+                            <RoleBasedRoute allowedRoles={['admin']}>
                               <TopCustomers />
                             </RoleBasedRoute>
                           }
@@ -418,7 +418,7 @@ const App = () => (
                         <Route
                           path="/reports/products"
                           element={
-                            <RoleBasedRoute allowedRoles={['admin', 'distributor']}>
+                            <RoleBasedRoute allowedRoles={['admin']}>
                               <TopProducts />
                             </RoleBasedRoute>
                           }
@@ -426,17 +426,17 @@ const App = () => (
                         <Route
                           path="/reports/states"
                           element={
-                            <RoleBasedRoute allowedRoles={['admin', 'distributor']}>
+                            <RoleBasedRoute allowedRoles={['admin']}>
                               <StateWiseSales />
                             </RoleBasedRoute>
                           }
                         />
 
-                        {/* Store - Admin & Distributor */}
+                        {/* Store - Admin */}
                         <Route
                           path="/store/gate-inward"
                           element={
-                            <RoleBasedRoute allowedRoles={['admin', 'distributor']}>
+                            <RoleBasedRoute allowedRoles={['admin']}>
                               <GateInwardPage />
                             </RoleBasedRoute>
                           }
@@ -444,7 +444,7 @@ const App = () => (
                         <Route
                           path="/store/marking"
                           element={
-                            <RoleBasedRoute allowedRoles={['admin', 'distributor']}>
+                            <RoleBasedRoute allowedRoles={['admin']}>
                               <MarkingPage />
                             </RoleBasedRoute>
                           }
@@ -452,7 +452,7 @@ const App = () => (
                         <Route
                           path="/store/packing"
                           element={
-                            <RoleBasedRoute allowedRoles={['admin', 'distributor']}>
+                            <RoleBasedRoute allowedRoles={['admin']}>
                               <PackingPage />
                             </RoleBasedRoute>
                           }
@@ -460,7 +460,7 @@ const App = () => (
                         <Route
                           path="/store/location"
                           element={
-                            <RoleBasedRoute allowedRoles={['admin', 'distributor']}>
+                            <RoleBasedRoute allowedRoles={['admin']}>
                               <StoreLocationPage />
                             </RoleBasedRoute>
                           }
@@ -468,17 +468,17 @@ const App = () => (
                         <Route
                           path="/store/opening-stock"
                           element={
-                            <RoleBasedRoute allowedRoles={['admin', 'distributor']}>
+                            <RoleBasedRoute allowedRoles={['admin']}>
                               <OpeningStockPage />
                             </RoleBasedRoute>
                           }
                         />
 
-                        {/* Configuration - Admin & Distributor */}
+                        {/* Configuration - Admin */}
                         <Route
                           path="/config/terms"
                           element={
-                            <RoleBasedRoute allowedRoles={['admin', 'distributor']}>
+                            <RoleBasedRoute allowedRoles={['admin']}>
                               <TermsPage />
                             </RoleBasedRoute>
                           }
@@ -486,7 +486,7 @@ const App = () => (
                         <Route
                           path="/config/transport"
                           element={
-                            <RoleBasedRoute allowedRoles={['admin', 'distributor']}>
+                            <RoleBasedRoute allowedRoles={['admin']}>
                               <TransportPage />
                             </RoleBasedRoute>
                           }
@@ -494,7 +494,7 @@ const App = () => (
                         <Route
                           path="/config/hsn"
                           element={
-                            <RoleBasedRoute allowedRoles={['admin', 'distributor']}>
+                            <RoleBasedRoute allowedRoles={['admin']}>
                               <HsnMasterPage />
                             </RoleBasedRoute>
                           }
@@ -502,7 +502,7 @@ const App = () => (
                         <Route
                           path="/config/tax"
                           element={
-                            <RoleBasedRoute allowedRoles={['admin', 'distributor']}>
+                            <RoleBasedRoute allowedRoles={['admin']}>
                               <TaxMasterPage />
                             </RoleBasedRoute>
                           }
@@ -510,7 +510,7 @@ const App = () => (
                         <Route
                           path="/config/expense"
                           element={
-                            <RoleBasedRoute allowedRoles={['admin', 'distributor']}>
+                            <RoleBasedRoute allowedRoles={['admin']}>
                               <ExpenseMasterPage />
                             </RoleBasedRoute>
                           }
@@ -518,7 +518,7 @@ const App = () => (
                         <Route
                           path="/config/group"
                           element={
-                            <RoleBasedRoute allowedRoles={['admin', 'distributor']}>
+                            <RoleBasedRoute allowedRoles={['admin']}>
                               <GroupMasterPage />
                             </RoleBasedRoute>
                           }
@@ -526,7 +526,7 @@ const App = () => (
                         <Route
                           path="/config/tax-class"
                           element={
-                            <RoleBasedRoute allowedRoles={['admin', 'distributor']}>
+                            <RoleBasedRoute allowedRoles={['admin']}>
                               <TaxClassPage />
                             </RoleBasedRoute>
                           }
@@ -534,7 +534,7 @@ const App = () => (
                         <Route
                           path="/config/voucher-prefix"
                           element={
-                            <RoleBasedRoute allowedRoles={['admin', 'distributor']}>
+                            <RoleBasedRoute allowedRoles={['admin']}>
                               <VoucherPrefixPage />
                             </RoleBasedRoute>
                           }
