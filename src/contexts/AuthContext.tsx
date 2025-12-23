@@ -124,6 +124,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     await supabase.auth.signOut();
     setRole(null);
     setTenantId(null);
+    window.location.href = '/auth';
   };
 
   const resetPassword = async (email: string) => {
