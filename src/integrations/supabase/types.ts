@@ -3424,6 +3424,10 @@ export type Database = {
       }
     }
     Functions: {
+      accept_invitation: {
+        Args: { p_invitation_id: string; p_user_id: string }
+        Returns: boolean
+      }
       belongs_to_tenant: { Args: { p_tenant_id: string }; Returns: boolean }
       can_access_distributor_data: {
         Args: { p_created_by?: string; p_distributor_id: string }
