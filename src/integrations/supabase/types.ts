@@ -2758,6 +2758,39 @@ export type Database = {
           },
         ]
       }
+      user_invitations: {
+        Row: {
+          accepted_at: string | null
+          created_at: string | null
+          email: string
+          expires_at: string | null
+          id: string
+          inviter_id: string
+          role: Database["public"]["Enums"]["app_role"]
+          tenant_id: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          created_at?: string | null
+          email: string
+          expires_at?: string | null
+          id?: string
+          inviter_id: string
+          role?: Database["public"]["Enums"]["app_role"]
+          tenant_id: string
+        }
+        Update: {
+          accepted_at?: string | null
+          created_at?: string | null
+          email?: string
+          expires_at?: string | null
+          id?: string
+          inviter_id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          tenant_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -3511,6 +3544,10 @@ export type Database = {
       }
       get_salesperson_distributor_id: { Args: never; Returns: string }
       get_user_distributor_id: { Args: never; Returns: string }
+      get_user_role: {
+        Args: never
+        Returns: Database["public"]["Enums"]["app_role"]
+      }
       get_user_tenant_id: { Args: never; Returns: string }
       get_voucher_prefixes_for_type: {
         Args: { p_distributor_id: string; p_voucher_name: string }
@@ -3540,6 +3577,7 @@ export type Database = {
         Returns: undefined
       }
       is_admin: { Args: never; Returns: boolean }
+      is_salesperson: { Args: never; Returns: boolean }
       is_superadmin: { Args: never; Returns: boolean }
       is_superadmin_user: { Args: never; Returns: boolean }
       is_tenant_superadmin: { Args: { p_tenant_id: string }; Returns: boolean }
