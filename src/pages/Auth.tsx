@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,8 +7,16 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2, Mail, Lock, ArrowLeft, CheckCircle2, AlertCircle } from 'lucide-react';
 import { z } from 'zod';
+import { supabase } from '@/integrations/supabase/client';
 
 type AuthMode = 'login' | 'signup' | 'forgot';
+
+interface InvitationData {
+  id: string;
+  email: string;
+  role: string;
+  tenant_id: string;
+}
 
 const emailSchema = z.string().email('Please enter a valid email address');
 const passwordSchema = z.string().min(6, 'Password must be at least 6 characters');
@@ -20,12 +28,49 @@ export default function Auth() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [invitation, setInvitation] = useState<InvitationData | null>(null);
+  const [loadingInvitation, setLoadingInvitation] = useState(false);
   
   const { signIn, signUp, resetPassword, user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
 
   const from = (location.state as { from?: { pathname: string } })?.from?.pathname || '/dashboard';
+  const invitationId = searchParams.get('invitation');
+
+  // Check for invitation on load
+  useEffect(() => {
+    const loadInvitation = async () => {
+      if (!invitationId) return;
+      
+      setLoadingInvitation(true);
+      try {
+        const { data, error } = await supabase
+          .from('user_invitations')
+          .select('id, email, role, tenant_id')
+          .eq('id', invitationId)
+          .is('accepted_at', null)
+          .single();
+        
+        if (error || !data) {
+          setError('This invitation is invalid or has expired.');
+          return;
+        }
+        
+        setInvitation(data as InvitationData);
+        setEmail(data.email);
+        setMode('signup');
+      } catch (err) {
+        console.error('Error loading invitation:', err);
+        setError('Failed to load invitation.');
+      } finally {
+        setLoadingInvitation(false);
+      }
+    };
+    
+    loadInvitation();
+  }, [invitationId]);
 
   useEffect(() => {
     if (user) {
@@ -72,7 +117,7 @@ export default function Auth() {
           }
         }
       } else if (mode === 'signup') {
-        const { error } = await signUp(email, password);
+        const { error, data } = await signUp(email, password);
         if (error) {
           if (error.message.includes('already registered')) {
             setError('This email is already registered. Please sign in instead.');
@@ -80,7 +125,41 @@ export default function Auth() {
             setError(error.message);
           }
         } else {
-          setSuccess('Check your email for a confirmation link to complete your registration.');
+          // If this is an invitation signup, mark it as accepted and assign role
+          if (invitation && data?.user) {
+            try {
+              // Mark invitation as accepted
+              await supabase
+                .from('user_invitations')
+                .update({ accepted_at: new Date().toISOString() })
+                .eq('id', invitation.id);
+              
+              // Create user role
+              await supabase
+                .from('user_roles')
+                .insert({
+                  user_id: data.user.id,
+                  role: invitation.role as 'salesperson' | 'admin' | 'superadmin' | 'distributor',
+                  tenant_id: invitation.tenant_id,
+                });
+              
+              // Create profile
+              await supabase
+                .from('profiles')
+                .insert({
+                  id: data.user.id,
+                  email: invitation.email,
+                });
+
+              setSuccess('Account created successfully! You are now logged in.');
+              // User is auto-logged in by Supabase, the useEffect will redirect
+            } catch (roleError) {
+              console.error('Error setting up user role:', roleError);
+              setSuccess('Account created! Please log in to continue.');
+            }
+          } else {
+            setSuccess('Check your email for a confirmation link to complete your registration.');
+          }
         }
       } else if (mode === 'forgot') {
         const { error } = await resetPassword(email);
@@ -103,6 +182,17 @@ export default function Auth() {
     setSuccess(null);
   };
 
+  if (loadingInvitation) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background p-4">
+        <div className="flex items-center gap-2 text-muted-foreground">
+          <Loader2 className="h-5 w-5 animate-spin" />
+          <span>Loading invitation...</span>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <div className="w-full max-w-md animate-fade-in">
@@ -118,14 +208,24 @@ export default function Auth() {
               </button>
             )}
             <CardTitle className="text-2xl font-semibold tracking-[-0.06em]">
-              {mode === 'login' && 'Welcome back'}
-              {mode === 'signup' && 'Create account'}
-              {mode === 'forgot' && 'Reset password'}
+              {invitation ? 'Complete your registration' : (
+                <>
+                  {mode === 'login' && 'Welcome back'}
+                  {mode === 'signup' && 'Create account'}
+                  {mode === 'forgot' && 'Reset password'}
+                </>
+              )}
             </CardTitle>
             <CardDescription className="text-muted-foreground tracking-[-0.06em]">
-              {mode === 'login' && 'Enter your credentials to access your account'}
-              {mode === 'signup' && 'Enter your details to get started'}
-              {mode === 'forgot' && 'We\'ll send you a reset link'}
+              {invitation ? (
+                `Set a password to join as a salesperson`
+              ) : (
+                <>
+                  {mode === 'login' && 'Enter your credentials to access your account'}
+                  {mode === 'signup' && 'Enter your details to get started'}
+                  {mode === 'forgot' && 'We\'ll send you a reset link'}
+                </>
+              )}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -160,10 +260,15 @@ export default function Auth() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="pl-10 tracking-[-0.06em] transition-all focus:ring-2 focus:ring-primary/20"
-                    disabled={loading}
+                    disabled={loading || !!invitation}
                     required
                   />
                 </div>
+                {invitation && (
+                  <p className="text-xs text-muted-foreground">
+                    This email is pre-filled from your invitation
+                  </p>
+                )}
               </div>
 
               {/* Password Field */}
@@ -208,21 +313,29 @@ export default function Auth() {
                 {loading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    {mode === 'login' && 'Signing in...'}
-                    {mode === 'signup' && 'Creating account...'}
-                    {mode === 'forgot' && 'Sending...'}
+                    {invitation ? 'Setting up account...' : (
+                      <>
+                        {mode === 'login' && 'Signing in...'}
+                        {mode === 'signup' && 'Creating account...'}
+                        {mode === 'forgot' && 'Sending...'}
+                      </>
+                    )}
                   </>
                 ) : (
                   <>
-                    {mode === 'login' && 'Sign in'}
-                    {mode === 'signup' && 'Create account'}
-                    {mode === 'forgot' && 'Send reset link'}
+                    {invitation ? 'Complete Registration' : (
+                      <>
+                        {mode === 'login' && 'Sign in'}
+                        {mode === 'signup' && 'Create account'}
+                        {mode === 'forgot' && 'Send reset link'}
+                      </>
+                    )}
                   </>
                 )}
               </Button>
 
-              {/* Mode Switch */}
-              {mode !== 'forgot' && (
+              {/* Mode Switch - hide when in invitation mode */}
+              {mode !== 'forgot' && !invitation && (
                 <div className="text-center text-sm text-muted-foreground tracking-[-0.06em]">
                   {mode === 'login' ? (
                     <>
