@@ -41,7 +41,7 @@ export function useDistributorProfile() {
 
             return data as DistributorProfile | null;
         },
-        enabled: !!user && (role === 'distributor' || role === 'admin' || role === 'superadmin'),
+        enabled: !!user && (role === 'admin' || role === 'superadmin'),
         staleTime: 10 * 60 * 1000, // 10 minutes
         gcTime: 30 * 60 * 1000, // 30 minutes
         refetchOnWindowFocus: false,
@@ -172,15 +172,7 @@ export function useDistributorId() {
                 return created?.id || null;
             }
 
-            if (role === 'distributor') {
-                const { data } = await supabase
-                    .from('distributor_profiles')
-                    .select('id')
-                    .eq('user_id', user.id)
-                    .maybeSingle();
-
-                return data?.id || null;
-            }
+            // Admin case is handled above with superadmin
 
             if (role === 'salesperson') {
                 const { data } = await supabase

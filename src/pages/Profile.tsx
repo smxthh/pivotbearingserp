@@ -187,7 +187,7 @@ export default function Profile() {
     return role.charAt(0).toUpperCase() + role.slice(1);
   };
 
-  const canEditCompany = role === 'admin' || role === 'distributor' || role === 'superadmin';
+  const canEditCompany = role === 'admin' || role === 'superadmin';
 
   return (
     <PageContainer title="My Profile">
