@@ -125,37 +125,28 @@ export default function Auth() {
             setError(error.message);
           }
         } else {
-          // If this is an invitation signup, mark it as accepted and assign role
+          // If this is an invitation signup, use the secure function to accept it
           if (invitation && data?.user) {
             try {
-              // Mark invitation as accepted
-              await supabase
-                .from('user_invitations')
-                .update({ accepted_at: new Date().toISOString() })
-                .eq('id', invitation.id);
-              
-              // Create user role
-              await supabase
-                .from('user_roles')
-                .insert({
-                  user_id: data.user.id,
-                  role: invitation.role as 'salesperson' | 'admin' | 'superadmin' | 'distributor',
-                  tenant_id: invitation.tenant_id,
+              // Call the secure database function to accept invitation
+              const { data: acceptResult, error: acceptError } = await supabase
+                .rpc('accept_invitation', {
+                  p_invitation_id: invitation.id,
+                  p_user_id: data.user.id,
                 });
               
-              // Create profile
-              await supabase
-                .from('profiles')
-                .insert({
-                  id: data.user.id,
-                  email: invitation.email,
-                });
-
-              setSuccess('Account created successfully! You are now logged in.');
-              // User is auto-logged in by Supabase, the useEffect will redirect
+              if (acceptError) {
+                console.error('Error accepting invitation:', acceptError);
+                setSuccess('Account created but role assignment failed. Please contact your administrator.');
+              } else if (acceptResult) {
+                setSuccess('Account created successfully! You are now logged in.');
+                // User is auto-logged in by Supabase, the useEffect will redirect
+              } else {
+                setSuccess('Account created but invitation may have expired. Please contact your administrator.');
+              }
             } catch (roleError) {
               console.error('Error setting up user role:', roleError);
-              setSuccess('Account created! Please log in to continue.');
+              setSuccess('Account created! Please contact your administrator to complete setup.');
             }
           } else {
             setSuccess('Check your email for a confirmation link to complete your registration.');
