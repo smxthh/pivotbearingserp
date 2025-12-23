@@ -148,11 +148,19 @@ export default function UserManagement() {
 
     setInviting(true);
     try {
-      // First, create the invitation record
+      const emailLower = inviteEmail.toLowerCase().trim();
+      
+      // Delete any existing invitation for this email (allows re-invitations)
+      await supabase
+        .from('user_invitations')
+        .delete()
+        .eq('email', emailLower);
+
+      // Create a new invitation record
       const { data: invitation, error } = await supabase
         .from('user_invitations')
         .insert({
-          email: inviteEmail.toLowerCase().trim(),
+          email: emailLower,
           role: 'salesperson',
           inviter_id: currentUser?.id,
           tenant_id: tenantId,
@@ -161,12 +169,7 @@ export default function UserManagement() {
         .single();
 
       if (error) {
-        if (error.code === '23505') {
-          toast.error('This email has already been invited');
-        } else {
-          throw error;
-        }
-        return;
+        throw error;
       }
 
       // Get inviter name and company name for the email
