@@ -106,7 +106,7 @@ export function useParties(options: UsePartiesOptions = { realtime: true }) {
             // Auto-create corresponding ledger account
             const groupName = party.type === 'supplier' ? 'Sundry Creditors' : 'Sundry Debtors';
             const openingBalanceType = party.type === 'supplier' ? 'Cr' : 'Dr';
-            
+
             const { error: ledgerError } = await supabase
                 .from('ledgers')
                 .insert({

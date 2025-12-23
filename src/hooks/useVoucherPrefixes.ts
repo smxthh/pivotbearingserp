@@ -327,8 +327,11 @@ export function useVoucherPrefixes(options: UseVoucherPrefixesOptions = {}) {
 // ============================================
 
 export function useVoucherPrefixesForType(voucherName: string) {
-    const { profile, isLoading: isProfileLoading } = useDistributorProfile();
+    const { profile, role, isLoading: isProfileLoading } = useDistributorProfile();
     const isEnabled = !!profile?.id && !isProfileLoading && !!voucherName;
+
+    // Only admins can auto-create prefixes
+    const canCreatePrefix = role === 'admin' || role === 'superadmin';
 
     const { data, isLoading } = useQuery({
         queryKey: ['voucher_prefixes_for_type', profile?.id, voucherName],
@@ -360,7 +363,8 @@ export function useVoucherPrefixesForType(voucherName: string) {
     const [isCreating, setIsCreating] = useState(false);
 
     useEffect(() => {
-        if (!isLoading && isEnabled && prefixes.length === 0 && voucherName && DEFAULT_VOUCHER_PREFIXES[voucherName] && !isCreating) {
+        // Only admins can auto-create prefixes - salespersons get virtual fallback only
+        if (!isLoading && isEnabled && prefixes.length === 0 && voucherName && DEFAULT_VOUCHER_PREFIXES[voucherName] && !isCreating && canCreatePrefix) {
             const createDefault = async () => {
                 setIsCreating(true);
                 console.log(`Auto-creating default prefix for ${voucherName}...`);
@@ -396,7 +400,7 @@ export function useVoucherPrefixesForType(voucherName: string) {
 
             createDefault();
         }
-    }, [isLoading, isEnabled, prefixes.length, voucherName, profile?.id, queryClient, isCreating]);
+    }, [isLoading, isEnabled, prefixes.length, voucherName, profile?.id, queryClient, isCreating, canCreatePrefix]);
 
     // virtual fallback while creating or if creation failed
     if (prefixes.length === 0 && voucherName && DEFAULT_VOUCHER_PREFIXES[voucherName]) {

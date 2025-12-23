@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import { queryClient } from '@/lib/queryClient';
 
 export type AppRole = 'superadmin' | 'admin' | 'salesperson';
 
@@ -48,7 +49,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       const userRole = data?.role as AppRole | null;
       setRole(userRole);
-      
+
       // For superadmin, their tenant_id is their own user_id
       // For others, use the tenant_id from the role assignment
       if (userRole === 'superadmin') {
@@ -74,7 +75,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
-        
+
+        // Clear ALL cached data when user changes to prevent showing old user's data
+        if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
+          // Clear all queries from the cache
+          queryClient.clear();
+          console.log('[Auth] Cleared all query cache on', event);
+        }
+
         // Reset logging out state when auth state changes
         if (event === 'SIGNED_IN') {
           setIsLoggingOut(false);
@@ -86,6 +94,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           }, 0);
         } else {
           setRole(null);
+          setTenantId(null);
         }
 
         setLoading(false);
@@ -133,7 +142,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setTenantId(null);
     setUser(null);
     setSession(null);
-    
+
+    // Clear all cached queries immediately
+    queryClient.clear();
+
     try {
       await supabase.auth.signOut();
     } catch (error) {

@@ -36,6 +36,7 @@ import {
 } from '@/components/ui/popover';
 import { useItems } from '@/hooks/useItems';
 import { useCategories } from '@/hooks/useCategories';
+import { useHsnMaster } from '@/hooks/useHsnMaster';
 import * as SelectPrimitive from '@radix-ui/react-select';
 
 // Form schema
@@ -47,7 +48,7 @@ const itemFormSchema = z.object({
     discount_percent: z.coerce.number().min(0).max(100),
     unit: z.string().default('PCS'),
     hsn_code: z.string().optional(),
-    gst_percent: z.coerce.number().min(0).max(100).default(18),
+    gst_percent: z.coerce.number().min(0, 'GST rate is required').max(100),
     remark: z.string().optional(),
 });
 
@@ -87,7 +88,9 @@ export function ItemSelectionDialog({
 }: ItemSelectionDialogProps) {
     const { items: allItems } = useItems({ realtime: true });
     const { getProductCategoryIds, getServiceCategoryIds, isLoading: isCatsLoading } = useCategories({ realtime: false });
+    const { hsnList, resolveHsnTax } = useHsnMaster();
     const [itemSearchOpen, setItemSearchOpen] = useState(false);
+    const [isResolvingTax, setIsResolvingTax] = useState(false);
 
     // Filter to show BOTH products AND services (matching ProductsPage + ServiceItemsPage)
     const productCategoryIds = getProductCategoryIds();
@@ -118,7 +121,7 @@ export function ItemSelectionDialog({
             discount_percent: '' as any,
             unit: 'PCS',
             hsn_code: '',
-            gst_percent: 18,
+            gst_percent: undefined,
             remark: '',
         },
     });
@@ -127,7 +130,7 @@ export function ItemSelectionDialog({
     const watchedQty = watch('quantity') || 0;
     const watchedRate = watch('rate') || 0;
     const watchedDiscount = watch('discount_percent') || 0;
-    const watchedGst = watch('gst_percent') || 0;
+    const watchedGst = watch('gst_percent') ?? 0;
 
     // Calculate amounts
     const calculations = useMemo(() => {
@@ -172,22 +175,46 @@ export function ItemSelectionDialog({
                     discount_percent: '' as any,
                     unit: 'PCS',
                     hsn_code: '',
-                    gst_percent: 18,
+                    gst_percent: undefined,
                     remark: '',
                 });
             }
         }
     }, [open, editItem, reset]);
 
-    // Handle item selection from dropdown
-    const handleItemSelect = (item: any) => {
+    // Handle item selection from dropdown - resolves tax from HSN Master (backend-authoritative)
+    const handleItemSelect = async (item: any) => {
         setValue('item_id', item.id);
         setValue('item_name', item.name);
         setValue('hsn_code', item.hsn_code || '');
-        setValue('rate', item.sale_price || item.purchase_price || 0);
-        setValue('gst_percent', item.gst_percent || 18);
         setValue('unit', item.unit || 'PCS');
         setItemSearchOpen(false);
+
+        // Resolve tax from HSN Master (SQL-first: backend decides)
+        if (item.hsn_code) {
+            setIsResolvingTax(true);
+            try {
+                const hsnInt = parseInt(item.hsn_code.replace(/\D/g, ''), 10);
+                if (!isNaN(hsnInt)) {
+                    const tax = await resolveHsnTax(hsnInt);
+                    if (tax) {
+                        setValue('gst_percent', tax.igst);
+                    } else {
+                        // Fallback to item's stored gst_percent if no HSN match
+                        setValue('gst_percent', item.gst_percent || 0);
+                    }
+                } else {
+                    setValue('gst_percent', item.gst_percent || 0);
+                }
+            } catch (err) {
+                console.error('Error resolving HSN tax:', err);
+                setValue('gst_percent', item.gst_percent || 0);
+            } finally {
+                setIsResolvingTax(false);
+            }
+        } else {
+            setValue('gst_percent', item.gst_percent || 0);
+        }
     };
 
     // Build invoice item from form data
@@ -225,8 +252,6 @@ export function ItemSelectionDialog({
         }).format(val);
 
     const units = ['PCS', 'KG', 'MTR', 'LTR', 'BOX', 'SET', 'NOS'];
-    const hsnCodes = ['8482', '8483', '8484', '8485', '8486'];
-    const gstRates = [0, 5, 12, 18, 28];
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
@@ -361,34 +386,60 @@ export function ItemSelectionDialog({
                     <div className="grid grid-cols-3 gap-4">
                         <div className="space-y-2">
                             <Label className="text-sm">HSN Code</Label>
-                            <Select value={watch('hsn_code') || ''} onValueChange={v => setValue('hsn_code', v)}>
+                            <Select
+                                value={watch('hsn_code') || ''}
+                                onValueChange={async (v) => {
+                                    setValue('hsn_code', v);
+                                    // Resolve tax from HSN when HSN is selected
+                                    if (v) {
+                                        setIsResolvingTax(true);
+                                        try {
+                                            const hsnInt = parseInt(v.replace(/\D/g, ''), 10);
+                                            if (!isNaN(hsnInt)) {
+                                                const tax = await resolveHsnTax(hsnInt);
+                                                if (tax) {
+                                                    setValue('gst_percent', tax.igst);
+                                                }
+                                            }
+                                        } catch (err) {
+                                            console.error('Error resolving HSN tax:', err);
+                                        } finally {
+                                            setIsResolvingTax(false);
+                                        }
+                                    }
+                                }}
+                            >
                                 <SelectTrigger>
                                     <SelectValue placeholder="Select HSN Code" />
                                 </SelectTrigger>
                                 <SelectPrimitive.Portal>
                                     <SelectContent>
-                                        {hsnCodes.map(h => (
-                                            <SelectItem key={h} value={h}>{h}</SelectItem>
-                                        ))}
+                                        {hsnList.length === 0 ? (
+                                            <SelectItem value="-" disabled>No HSN codes configured</SelectItem>
+                                        ) : (
+                                            hsnList.map((h) => (
+                                                <SelectItem key={h.id} value={String(h.hsn_from)}>
+                                                    {h.hsn_from === h.hsn_to
+                                                        ? h.hsn_from
+                                                        : `${h.hsn_from} - ${h.hsn_to}`
+                                                    } ({h.igst}%)
+                                                </SelectItem>
+                                            ))
+                                        )}
                                     </SelectContent>
                                 </SelectPrimitive.Portal>
                             </Select>
                         </div>
 
                         <div className="space-y-2">
-                            <Label className="text-sm">GST Per.(%)</Label>
-                            <Select value={String(watch('gst_percent'))} onValueChange={v => setValue('gst_percent', Number(v))}>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Select GST" />
-                                </SelectTrigger>
-                                <SelectPrimitive.Portal>
-                                    <SelectContent>
-                                        {gstRates.map(g => (
-                                            <SelectItem key={g} value={String(g)}>{g}%</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </SelectPrimitive.Portal>
-                            </Select>
+                            <Label className="text-sm">GST (%) <span className="text-xs text-muted-foreground">(From HSN)</span></Label>
+                            <Input
+                                type="text"
+                                value={isResolvingTax ? 'Loading...' : `${watch('gst_percent') ?? 0}%`}
+                                disabled
+                                className="bg-muted font-medium"
+                            />
+                            <p className="text-xs text-muted-foreground">Resolved from HSN Master</p>
                         </div>
 
                         <div className="space-y-2">

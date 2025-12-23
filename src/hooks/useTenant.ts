@@ -20,37 +20,52 @@ export function useTenant() {
         return [];
       }
 
-      const { data, error } = await supabase
+      // First get user_roles
+      const { data: userRoles, error: rolesError } = await supabase
         .from('user_roles')
-        .select(`
-          user_id,
-          role,
-          created_at,
-          profiles!inner(email)
-        `)
+        .select('user_id, role, created_at')
         .eq('tenant_id', tenantId);
 
-      if (error) {
-        console.error('Error fetching tenant users:', error);
+      if (rolesError) {
+        console.error('Error fetching tenant user roles:', rolesError);
         return [];
       }
 
-      return data?.map((item: any) => ({
-        user_id: item.user_id,
-        email: item.profiles?.email || 'Unknown',
-        role: item.role,
-        created_at: item.created_at,
-      })) || [];
+      if (!userRoles || userRoles.length === 0) {
+        return [];
+      }
+
+      // Then get profiles for these users
+      const userIds = userRoles.map(ur => ur.user_id);
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, email')
+        .in('id', userIds);
+
+      if (profilesError) {
+        console.error('Error fetching profiles:', profilesError);
+      }
+
+      // Combine the data
+      return userRoles.map((userRole) => {
+        const profile = profiles?.find(p => p.id === userRole.user_id);
+        return {
+          user_id: userRole.user_id,
+          email: profile?.email || 'Unknown',
+          role: userRole.role,
+          created_at: userRole.created_at,
+        };
+      });
     },
     enabled: !!tenantId && (role === 'superadmin' || role === 'admin'),
   });
 
   // Check if current user is the tenant owner (superadmin)
   const isTenantOwner = role === 'superadmin';
-  
+
   // Check if user can manage other users
   const canManageUsers = role === 'superadmin' || role === 'admin';
-  
+
   // Check if user can download data (superadmin only)
   const canDownloadData = role === 'superadmin';
 

@@ -1,5 +1,7 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useDistributorProfile } from './useDistributorProfile';
+import { useRealtimeSubscription } from './useRealtimeSubscription';
 
 // GST Rate options (as numbers for easy comparison)
 export const GST_RATES = [0, 5, 12, 18, 28];
@@ -17,7 +19,7 @@ export const UNITS = [
     { value: 'HRS', label: 'HRS - Hours' },
 ];
 
-// HSN Code type
+// HSN Code type (from hsn_master table)
 export interface HsnCode {
     id: string;
     code: string;
@@ -35,20 +37,6 @@ export interface SacCode {
     is_active: boolean;
 }
 
-// Common HSN codes for bearings (hardcoded for now until migration runs)
-const COMMON_HSN_CODES: HsnCode[] = [
-    { id: 'hsn-1', code: '8482', description: 'Ball or roller bearings', gst_rate: 18, is_active: true },
-    { id: 'hsn-2', code: '84821010', description: 'Ball bearings - Deep groove ball bearings', gst_rate: 18, is_active: true },
-    { id: 'hsn-3', code: '84821020', description: 'Ball bearings - Angular contact ball bearings', gst_rate: 18, is_active: true },
-    { id: 'hsn-4', code: '84821090', description: 'Ball bearings - Other', gst_rate: 18, is_active: true },
-    { id: 'hsn-5', code: '84822010', description: 'Tapered roller bearings', gst_rate: 18, is_active: true },
-    { id: 'hsn-6', code: '84822090', description: 'Roller bearings - Other', gst_rate: 18, is_active: true },
-    { id: 'hsn-7', code: '84823000', description: 'Spherical roller bearings', gst_rate: 18, is_active: true },
-    { id: 'hsn-8', code: '84824000', description: 'Needle roller bearings', gst_rate: 18, is_active: true },
-    { id: 'hsn-9', code: '84825000', description: 'Cylindrical roller bearings', gst_rate: 18, is_active: true },
-    { id: 'hsn-10', code: '84828000', description: 'Other roller bearings', gst_rate: 18, is_active: true },
-];
-
 // Common SAC codes for services (hardcoded for now)
 const COMMON_SAC_CODES: SacCode[] = [
     { id: 'sac-1', code: '9987', description: 'Repair & maintenance services', gst_rate: 18, is_active: true },
@@ -58,30 +46,46 @@ const COMMON_SAC_CODES: SacCode[] = [
     { id: 'sac-5', code: '9971', description: 'Financial services', gst_rate: 18, is_active: true },
 ];
 
-// Hook to fetch HSN codes
+// Hook to fetch HSN codes from hsn_master (BACKEND-DRIVEN)
 export function useHsnCodes(search?: string) {
+    const { profile, isLoading: isProfileLoading } = useDistributorProfile();
+    const isEnabled = !!profile?.id && !isProfileLoading;
+
+    const queryKey = ['hsn-codes', profile?.id, search];
+
+    // Realtime subscription for automatic sync
+    useRealtimeSubscription('hsn_master' as any, queryKey as string[], undefined, isEnabled);
+
     const { data, isLoading, error, refetch } = useQuery({
-        queryKey: ['hsn-codes', search],
+        queryKey,
         queryFn: async (): Promise<HsnCode[]> => {
-            // Try to fetch from database
-            try {
-                const { data, error } = await (supabase as any)
-                    .from('hsn_codes')
-                    .select('*')
-                    .eq('is_active', true)
-                    .order('code');
+            if (!profile?.id) return [];
 
-                if (error) {
-                    // Table doesn't exist yet, return hardcoded
-                    return COMMON_HSN_CODES;
-                }
+            // Fetch from hsn_master table (THE AUTHORITATIVE SOURCE)
+            const { data, error } = await supabase
+                .from('hsn_master')
+                .select('*')
+                .eq('distributor_id', profile.id)
+                .eq('is_active', true)
+                .order('hsn_from');
 
-                return (data || []) as HsnCode[];
-            } catch (e) {
-                // Return hardcoded values
-                return COMMON_HSN_CODES;
+            if (error) {
+                console.error('Error fetching HSN codes:', error);
+                return [];
             }
+
+            // Transform hsn_master records to HsnCode format
+            return (data || []).map((hsn: any) => ({
+                id: hsn.id,
+                code: String(hsn.hsn_from),
+                description: hsn.description || (hsn.hsn_from === hsn.hsn_to
+                    ? `HSN ${hsn.hsn_from}`
+                    : `HSN ${hsn.hsn_from} - ${hsn.hsn_to}`),
+                gst_rate: hsn.igst || 0,
+                is_active: hsn.is_active ?? true,
+            }));
         },
+        enabled: isEnabled,
     });
 
     // Filter by search
@@ -96,7 +100,7 @@ export function useHsnCodes(search?: string) {
     // Build dropdown options
     const options = filteredData.map((hsn) => ({
         value: hsn.id,
-        label: `${hsn.code} - ${hsn.description || 'N/A'}`,
+        label: `${hsn.code} - ${hsn.description || 'N/A'} (${hsn.gst_rate}%)`,
         code: hsn.code,
         gstRate: hsn.gst_rate,
     }));
@@ -104,7 +108,7 @@ export function useHsnCodes(search?: string) {
     return {
         hsnCodes: data || [],
         options,
-        isLoading,
+        isLoading: isLoading || isProfileLoading,
         error,
         refetch,
     };

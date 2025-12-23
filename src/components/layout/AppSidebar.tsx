@@ -471,7 +471,7 @@ export function AppSidebar() {
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 overflow-y-auto py-4 px-2">
+          <nav className="flex-1 overflow-y-auto py-4 px-2 scrollbar-thin">
             {menuGroups.map((group) => (
               <MenuSection
                 key={group.label}

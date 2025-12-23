@@ -118,7 +118,6 @@ export function useLedgerGroups() {
             return data as LedgerGroup[];
         },
         enabled: !!user,
-        staleTime: 60000, // Cache for 1 minute
     });
 
     return {
@@ -189,7 +188,6 @@ export function useLedgers(options: UseLedgersOptions = { realtime: true }) {
             return data as unknown as Ledger[];
         },
         enabled: !!user,
-        staleTime: 30000,
     });
 
     // Get ledger by ID with transactions

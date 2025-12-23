@@ -11,11 +11,12 @@ export type DistributorProfileUpdate = TablesUpdate<'distributor_profiles'>;
 /**
  * Hook for managing distributor profile
  * Used for company settings, invoice prefix, etc.
+ * For salespersons: Returns their admin's profile via tenantId
  */
 export function useDistributorProfile() {
-    const { user, role } = useAuth();
+    const { user, role, tenantId } = useAuth();
     const queryClient = useQueryClient();
-    const queryKey = ['distributor_profile', user?.id];
+    const queryKey = ['distributor_profile', user?.id, role, tenantId];
 
     // Fetch distributor profile
     const {
@@ -28,6 +29,29 @@ export function useDistributorProfile() {
         queryFn: async () => {
             if (!user) return null;
 
+            // For salespersons, fetch admin's profile using tenantId
+            if (role === 'salesperson') {
+                if (!tenantId) {
+                    console.error('Salesperson has no tenant_id assigned');
+                    return null;
+                }
+
+                const { data, error } = await supabase
+                    .from('distributor_profiles')
+                    .select('*')
+                    .eq('user_id', tenantId)
+                    .maybeSingle();
+
+                if (error) {
+                    console.error('Error fetching admin distributor profile for salesperson:', error);
+                    // Don't throw - return null to allow virtual fallbacks
+                    return null;
+                }
+
+                return data as DistributorProfile | null;
+            }
+
+            // For admin/superadmin, fetch their own profile
             const { data, error } = await supabase
                 .from('distributor_profiles')
                 .select('*')
@@ -41,7 +65,7 @@ export function useDistributorProfile() {
 
             return data as DistributorProfile | null;
         },
-        enabled: !!user && (role === 'admin' || role === 'superadmin'),
+        enabled: !!user && !!role, // Enable for ALL roles including salesperson
         staleTime: 10 * 60 * 1000, // 10 minutes
         gcTime: 30 * 60 * 1000, // 30 minutes
         refetchOnWindowFocus: false,
@@ -117,6 +141,7 @@ export function useDistributorProfile() {
 
     return {
         profile,
+        role, // Include role for consumers to avoid duplicate useAuth calls
         isLoading,
         error,
         refetch,
@@ -130,14 +155,13 @@ export function useDistributorProfile() {
 /**
  * Get the current user's distributor ID for API calls
  * For admins: Creates or fetches their own distributor profile
- * For distributors: Returns their profile ID
- * For salespersons: Returns their assigned distributor_id
+ * For salespersons: Returns their ADMIN's distributor_id via tenant_id
  */
 export function useDistributorId() {
-    const { user, role } = useAuth();
+    const { user, role, tenantId } = useAuth();
 
     return useQuery({
-        queryKey: ['distributor_id', user?.id, role],
+        queryKey: ['distributor_id', user?.id, role, tenantId],
         queryFn: async () => {
             if (!user) return null;
 
@@ -172,16 +196,31 @@ export function useDistributorId() {
                 return created?.id || null;
             }
 
-            // Admin case is handled above with superadmin
-
             if (role === 'salesperson') {
-                const { data } = await supabase
-                    .from('salespersons')
-                    .select('distributor_id')
-                    .eq('user_id', user.id)
+                // For salesperson: Get distributor_id from their ADMIN's profile using tenant_id
+                // tenant_id is the admin's user_id, so we look up distributor_profiles.user_id = tenant_id
+                if (!tenantId) {
+                    console.error('Salesperson has no tenant_id assigned');
+                    return null;
+                }
+
+                const { data, error } = await supabase
+                    .from('distributor_profiles')
+                    .select('id')
+                    .eq('user_id', tenantId)
                     .maybeSingle();
 
-                return data?.distributor_id || null;
+                if (error) {
+                    console.error('Error fetching admin distributor profile for salesperson:', error);
+                    return null;
+                }
+
+                if (!data) {
+                    console.error('No distributor profile found for tenant:', tenantId);
+                    return null;
+                }
+
+                return data.id;
             }
 
             return null;

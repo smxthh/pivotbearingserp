@@ -43,6 +43,7 @@ import * as XLSX from 'xlsx';
 
 export default function HsnMasterPage() {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [editRecord, setEditRecord] = useState<HsnMaster | null>(null);
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [recordToDelete, setRecordToDelete] = useState<HsnMaster | null>(null);
 
@@ -68,7 +69,15 @@ export default function HsnMasterPage() {
     const totalPages = Math.ceil(totalCount / pageSize);
 
     // Handlers
-    const handleAddClick = () => setIsDialogOpen(true);
+    const handleAddClick = () => {
+        setEditRecord(null);
+        setIsDialogOpen(true);
+    };
+
+    const handleEditClick = (record: HsnMaster) => {
+        setEditRecord(record);
+        setIsDialogOpen(true);
+    };
 
     const handleDeleteClick = (record: HsnMaster) => {
         setRecordToDelete(record);
@@ -92,16 +101,17 @@ export default function HsnMasterPage() {
             .from('hsn_master')
             .select('*')
             .eq('distributor_id', profile.id)
-            .order('created_at', { ascending: false });
+            .order('hsn_from', { ascending: true });
 
         if (!data) return;
 
         const exportData = data.map((record: any, index: number) => ({
             '#': index + 1,
-            'HSN': record.hsn_code,
-            'CGST': record.gst_percent ? (record.gst_percent / 2).toFixed(2) : '0.00',
-            'SGST': record.gst_percent ? (record.gst_percent / 2).toFixed(2) : '0.00',
-            'IGST': record.gst_percent?.toFixed(2) || '0.00',
+            'HSN From': record.hsn_from,
+            'HSN To': record.hsn_to,
+            'CGST': record.cgst?.toFixed(2) || '0.00',
+            'SGST': record.sgst?.toFixed(2) || '0.00',
+            'IGST': record.igst?.toFixed(2) || '0.00',
             'Description': record.description || '-',
         }));
 
@@ -198,7 +208,7 @@ export default function HsnMasterPage() {
                             <TableRow className="bg-primary hover:bg-primary">
                                 <TableHead className="text-primary-foreground text-xs w-16">Action</TableHead>
                                 <TableHead className="text-primary-foreground text-xs w-10">#</TableHead>
-                                <TableHead className="text-primary-foreground text-xs">HSN</TableHead>
+                                <TableHead className="text-primary-foreground text-xs">HSN Range</TableHead>
                                 <TableHead className="text-primary-foreground text-xs text-right">CGST</TableHead>
                                 <TableHead className="text-primary-foreground text-xs text-right">SGST</TableHead>
                                 <TableHead className="text-primary-foreground text-xs text-right">IGST</TableHead>
@@ -224,6 +234,12 @@ export default function HsnMasterPage() {
                                                 </DropdownMenuTrigger>
                                                 <DropdownMenuContent align="start">
                                                     <DropdownMenuItem
+                                                        onClick={() => handleEditClick(record)}
+                                                    >
+                                                        <Settings className="h-4 w-4 mr-2" />
+                                                        Edit
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem
                                                         onClick={() => handleDeleteClick(record)}
                                                         className="text-destructive"
                                                     >
@@ -236,15 +252,19 @@ export default function HsnMasterPage() {
                                         <TableCell className="text-xs text-slate-600">
                                             {(currentPage - 1) * pageSize + index + 1}
                                         </TableCell>
-                                        <TableCell className="text-xs font-medium text-primary">{record.hsn_code}</TableCell>
-                                        <TableCell className="text-xs text-slate-600 text-right">
-                                            {record.gst_percent ? (record.gst_percent / 2).toFixed(2) : '0.00'}
+                                        <TableCell className="text-xs font-medium text-primary">
+                                            {record.hsn_from === record.hsn_to
+                                                ? record.hsn_from
+                                                : `${record.hsn_from} - ${record.hsn_to}`}
                                         </TableCell>
                                         <TableCell className="text-xs text-slate-600 text-right">
-                                            {record.gst_percent ? (record.gst_percent / 2).toFixed(2) : '0.00'}
+                                            {record.cgst?.toFixed(2) || '0.00'}%
                                         </TableCell>
                                         <TableCell className="text-xs text-slate-600 text-right">
-                                            {record.gst_percent?.toFixed(2) || '0.00'}
+                                            {record.sgst?.toFixed(2) || '0.00'}%
+                                        </TableCell>
+                                        <TableCell className="text-xs text-slate-600 text-right font-medium">
+                                            {record.igst?.toFixed(2) || '0.00'}%
                                         </TableCell>
                                         <TableCell className="text-xs text-slate-600 max-w-[200px] truncate">
                                             {record.description || '-'}
@@ -284,8 +304,15 @@ export default function HsnMasterPage() {
                 </div>
             </div>
 
-            {/* Add Dialog */}
-            <AddHsnDialog open={isDialogOpen} onOpenChange={setIsDialogOpen} />
+            {/* Add/Edit Dialog */}
+            <AddHsnDialog
+                open={isDialogOpen}
+                onOpenChange={(open) => {
+                    setIsDialogOpen(open);
+                    if (!open) setEditRecord(null);
+                }}
+                editRecord={editRecord}
+            />
 
             {/* Delete Confirmation */}
             <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>

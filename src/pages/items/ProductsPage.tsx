@@ -193,6 +193,7 @@ export default function ProductsPage() {
                                     <th className="px-4 py-3 text-left text-sm font-medium w-[50px]">#</th>
                                     <th className="px-4 py-3 text-left text-sm font-medium">Item Code</th>
                                     <th className="px-4 py-3 text-left text-sm font-medium">Item Name</th>
+                                    <th className="px-4 py-3 text-left text-sm font-medium">HSN Code</th>
                                     <th className="px-4 py-3 text-left text-sm font-medium">Category Name</th>
                                     <th className="px-4 py-3 text-right text-sm font-medium">Price</th>
                                     <th className="px-4 py-3 text-center text-sm font-medium">Stock</th>
@@ -241,6 +242,9 @@ export default function ProductsPage() {
                                             >
                                                 {product.name}
                                             </span>
+                                        </td>
+                                        <td className="px-4 py-3 text-sm font-mono text-muted-foreground">
+                                            {product.hsn_code || '-'}
                                         </td>
                                         <td className="px-4 py-3 text-sm">
                                             {getCategoryName(product.category_id)}

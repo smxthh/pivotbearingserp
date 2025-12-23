@@ -177,44 +177,14 @@ export function ProductDialog({ open, onOpenChange, product, onSuccess }: Produc
         }
     }, [product, form]);
 
-    // Pricing Calculation Logic
-    const calculatePricing = (source: 'price' | 'mrp' | 'gst') => {
-        const gst = form.getValues('gst_percent') || 0;
-        const price = form.getValues('sale_price') || 0;
-        const mrp = form.getValues('mrp') || 0;
-
-        if (gst > 0) {
-            if (source === 'price' && price > 0) {
-                // Calculate MRP based on Price + GST
-                const taxAmt = (price * gst) / 100;
-                const newMrp = price + taxAmt;
-                form.setValue('mrp', parseFloat(newMrp.toFixed(2)));
-            } else if ((source === 'mrp' || source === 'gst') && mrp > 0) {
-                // Calculate Price based on MRP (Reverse GST)
-                const gstReverse = (gst + 100) / 100;
-                const newPrice = mrp / gstReverse;
-                form.setValue('sale_price', parseFloat(newPrice.toFixed(2)));
-            }
-        } else {
-            // No tax, Price = MRP
-            if (source === 'price' && price > 0) {
-                form.setValue('mrp', price);
-            } else if (source === 'mrp' && mrp > 0) {
-                form.setValue('sale_price', mrp);
-            }
-        }
-    };
-
     // Handle HSN code selection
     const handleHsnChange = (hsnCode: string) => {
         form.setValue('hsn_code', hsnCode === 'null_hsn' ? '' : hsnCode);
         const selectedHsn = hsnOptions.find((h) => h.code === hsnCode);
         if (selectedHsn) {
             form.setValue('gst_percent', selectedHsn.gstRate);
-            calculatePricing('gst');
         } else if (hsnCode === 'null_hsn') {
             form.setValue('gst_percent', 0);
-            calculatePricing('gst');
         }
     };
 
@@ -398,7 +368,6 @@ export function ProductDialog({ open, onOpenChange, product, onSuccess }: Produc
                                             <Select
                                                 onValueChange={(val) => {
                                                     field.onChange(Number(val));
-                                                    calculatePricing('gst');
                                                 }}
                                                 value={field.value.toString()}
                                             >
@@ -434,10 +403,6 @@ export function ProductDialog({ open, onOpenChange, product, onSuccess }: Produc
                                                     step="0.01"
                                                     {...field}
                                                     onWheel={(e) => e.currentTarget.blur()}
-                                                    onChange={(e) => {
-                                                        field.onChange(e);
-                                                        calculatePricing('price');
-                                                    }}
                                                 />
                                             </FormControl>
                                             <FormMessage />
@@ -459,10 +424,6 @@ export function ProductDialog({ open, onOpenChange, product, onSuccess }: Produc
                                                     step="0.01"
                                                     {...field}
                                                     onWheel={(e) => e.currentTarget.blur()}
-                                                    onChange={(e) => {
-                                                        field.onChange(e);
-                                                        calculatePricing('mrp');
-                                                    }}
                                                 />
                                             </FormControl>
                                             <FormMessage />

@@ -1,13 +1,14 @@
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AppProvider } from "@/contexts/AppContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { RoleBasedRoute } from "@/components/auth/RoleBasedRoute";
+import { queryClient } from "@/lib/queryClient";
 
 // Pages
 import Auth from "@/pages/Auth";
@@ -65,8 +66,6 @@ import GroupMasterPage from "@/pages/config/GroupMasterPage";
 import TaxClassPage from "@/pages/config/TaxClassPage";
 import VoucherPrefixPage from "@/pages/config/VoucherPrefixPage";
 import NotFound from "@/pages/NotFound";
-
-const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>

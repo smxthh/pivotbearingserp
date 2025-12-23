@@ -33,7 +33,7 @@ export function DatePicker({
     const dateValue = parsedDate instanceof Date && !isNaN(parsedDate.getTime()) ? parsedDate : undefined;
 
     return (
-        <Popover>
+        <Popover modal={true}>
             <PopoverTrigger asChild>
                 <Button
                     variant={"outline"}

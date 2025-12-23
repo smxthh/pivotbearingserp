@@ -72,7 +72,6 @@ export function useItems(options: UseItemsOptions = { realtime: true }) {
             return data as (Item & { category: { id: string; name: string } | null })[];
         },
         enabled: !!user,
-        staleTime: 30000,
     });
 
     // Get single item by ID
