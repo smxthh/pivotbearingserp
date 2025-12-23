@@ -3511,6 +3511,10 @@ export type Database = {
       }
       get_salesperson_distributor_id: { Args: never; Returns: string }
       get_user_distributor_id: { Args: never; Returns: string }
+      get_user_role_direct: {
+        Args: { p_user_id: string }
+        Returns: Database["public"]["Enums"]["app_role"]
+      }
       get_user_tenant_id: { Args: never; Returns: string }
       get_voucher_prefixes_for_type: {
         Args: { p_distributor_id: string; p_voucher_name: string }
