@@ -55,25 +55,40 @@ export default function UserManagement() {
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      // Fetch profiles - RLS will filter based on tenant for admins
+      // Fetch user roles with tenant filtering - RLS filters by tenant for admins
+      const { data: roles, error: rolesError } = await supabase
+        .from('user_roles')
+        .select('id, user_id, role, tenant_id');
+
+      if (rolesError) throw rolesError;
+
+      // For admins, filter to only show users in their tenant
+      const filteredRoles = isSuperadmin 
+        ? roles 
+        : roles?.filter(r => r.tenant_id === tenantId);
+
+      // Get user IDs that belong to this tenant
+      const userIds = filteredRoles?.map(r => r.user_id) || [];
+
+      if (userIds.length === 0) {
+        setUsers([]);
+        setLoading(false);
+        return;
+      }
+
+      // Fetch profiles only for users in this tenant
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select('id, email, created_at')
+        .in('id', userIds)
         .order('created_at', { ascending: false });
 
       if (profilesError) throw profilesError;
 
-      // Fetch user roles - RLS filters by tenant for admins
-      const { data: roles, error: rolesError } = await supabase
-        .from('user_roles')
-        .select('id, user_id, role');
-
-      if (rolesError) throw rolesError;
-
-      // Combine data - only show users that have roles visible to current user
+      // Combine data
       const usersWithRoles: UserWithRole[] = (profiles || [])
         .map(profile => {
-          const userRole = roles?.find(r => r.user_id === profile.id);
+          const userRole = filteredRoles?.find(r => r.user_id === profile.id);
           return {
             id: profile.id,
             email: profile.email,
@@ -82,17 +97,23 @@ export default function UserManagement() {
             role_id: userRole?.id || null,
           };
         })
-        // Superadmin sees all users, admins only see users with roles in their tenant
-        .filter(u => isSuperadmin || u.role !== null);
+        .filter(u => u.role !== null);
 
       setUsers(usersWithRoles);
 
-      // Fetch pending invitations
-      const { data: invites, error: invitesError } = await supabase
+      // Fetch pending invitations for this tenant
+      let invitesQuery = supabase
         .from('user_invitations')
         .select('*')
         .is('accepted_at', null)
         .order('created_at', { ascending: false });
+      
+      // Admins only see invitations for their tenant
+      if (!isSuperadmin && tenantId) {
+        invitesQuery = invitesQuery.eq('tenant_id', tenantId);
+      }
+
+      const { data: invites, error: invitesError } = await invitesQuery;
 
       if (!invitesError && invites) {
         setInvitations(invites as Invitation[]);
