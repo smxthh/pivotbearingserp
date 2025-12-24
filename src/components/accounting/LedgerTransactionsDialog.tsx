@@ -144,8 +144,21 @@ export function LedgerTransactionsDialog({
             journal_entry: 'Journal',
             gst_payment: 'GST Payment',
             tcs_tds_payment: 'TDS/TCS',
+            SALES_INVOICE: 'Sales Invoice',
+            PURCHASE_INVOICE: 'Purchase Invoice',
+            REVERSAL: 'Reversal',
+            RECEIPT: 'Receipt',
+            PAYMENT: 'Payment',
         };
         return labels[type] || type;
+    };
+
+    // Get badge variant based on transaction type
+    const getBadgeVariant = (type: string): 'default' | 'secondary' | 'destructive' | 'outline' => {
+        if (type === 'REVERSAL') return 'destructive';
+        if (type === 'SALES_INVOICE' || type === 'tax_invoice') return 'default';
+        if (type === 'PURCHASE_INVOICE' || type === 'purchase_invoice') return 'secondary';
+        return 'outline';
     };
 
     return (

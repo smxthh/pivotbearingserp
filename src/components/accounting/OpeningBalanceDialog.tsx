@@ -53,9 +53,9 @@ export function OpeningBalanceDialog({ open, onOpenChange, ledgers }: OpeningBal
                 ledgers.map((l) => ({
                     ledger_id: l.id,
                     name: l.name,
-                    group_name: l.group_name,
-                    opening_balance: l.opening_balance,
-                    opening_balance_type: l.opening_balance_type,
+                    group_name: l.group_name || '',
+                    opening_balance: l.opening_balance || 0,
+                    opening_balance_type: (l.opening_balance_type as 'Dr' | 'Cr') || 'Dr',
                     modified: false,
                 }))
             );
