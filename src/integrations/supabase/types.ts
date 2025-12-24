@@ -17,6 +17,7 @@ export type Database = {
       brands: {
         Row: {
           created_at: string | null
+          created_by: string | null
           description: string | null
           distributor_id: string
           id: string
@@ -24,10 +25,13 @@ export type Database = {
           logo_url: string | null
           name: string
           sort_order: number | null
+          tenant_id: string | null
           updated_at: string | null
+          updated_by: string | null
         }
         Insert: {
           created_at?: string | null
+          created_by?: string | null
           description?: string | null
           distributor_id: string
           id?: string
@@ -35,10 +39,13 @@ export type Database = {
           logo_url?: string | null
           name: string
           sort_order?: number | null
+          tenant_id?: string | null
           updated_at?: string | null
+          updated_by?: string | null
         }
         Update: {
           created_at?: string | null
+          created_by?: string | null
           description?: string | null
           distributor_id?: string
           id?: string
@@ -46,7 +53,9 @@ export type Database = {
           logo_url?: string | null
           name?: string
           sort_order?: number | null
+          tenant_id?: string | null
           updated_at?: string | null
+          updated_by?: string | null
         }
         Relationships: [
           {
@@ -62,6 +71,7 @@ export type Database = {
         Row: {
           category_type: Database["public"]["Enums"]["category_type"] | null
           created_at: string
+          created_by: string | null
           description: string | null
           distributor_id: string
           id: string
@@ -72,10 +82,13 @@ export type Database = {
           parent_id: string | null
           remark: string | null
           sort_order: number | null
+          tenant_id: string | null
+          updated_by: string | null
         }
         Insert: {
           category_type?: Database["public"]["Enums"]["category_type"] | null
           created_at?: string
+          created_by?: string | null
           description?: string | null
           distributor_id: string
           id?: string
@@ -86,10 +99,13 @@ export type Database = {
           parent_id?: string | null
           remark?: string | null
           sort_order?: number | null
+          tenant_id?: string | null
+          updated_by?: string | null
         }
         Update: {
           category_type?: Database["public"]["Enums"]["category_type"] | null
           created_at?: string
+          created_by?: string | null
           description?: string | null
           distributor_id?: string
           id?: string
@@ -100,6 +116,8 @@ export type Database = {
           parent_id?: string | null
           remark?: string | null
           sort_order?: number | null
+          tenant_id?: string | null
+          updated_by?: string | null
         }
         Relationships: [
           {
@@ -380,6 +398,36 @@ export type Database = {
           },
         ]
       }
+      fiscal_years: {
+        Row: {
+          created_at: string | null
+          end_date: string
+          id: string
+          is_locked: boolean | null
+          name: string
+          start_date: string
+          tenant_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          end_date: string
+          id?: string
+          is_locked?: boolean | null
+          name: string
+          start_date: string
+          tenant_id: string
+        }
+        Update: {
+          created_at?: string | null
+          end_date?: string
+          id?: string
+          is_locked?: boolean | null
+          name?: string
+          start_date?: string
+          tenant_id?: string
+        }
+        Relationships: []
+      }
       gate_inward_items: {
         Row: {
           batch_number: string | null
@@ -646,58 +694,79 @@ export type Database = {
         Row: {
           code: string
           created_at: string | null
+          created_by: string | null
           description: string | null
           gst_rate: number | null
           id: string
           is_active: boolean | null
+          tenant_id: string | null
         }
         Insert: {
           code: string
           created_at?: string | null
+          created_by?: string | null
           description?: string | null
           gst_rate?: number | null
           id?: string
           is_active?: boolean | null
+          tenant_id?: string | null
         }
         Update: {
           code?: string
           created_at?: string | null
+          created_by?: string | null
           description?: string | null
           gst_rate?: number | null
           id?: string
           is_active?: boolean | null
+          tenant_id?: string | null
         }
         Relationships: []
       }
       hsn_master: {
         Row: {
+          cgst: number
           created_at: string | null
           description: string | null
           distributor_id: string
           gst_percent: number | null
           hsn_code: string
+          hsn_from: number
+          hsn_to: number
           id: string
+          igst: number
           is_active: boolean | null
+          sgst: number
           updated_at: string | null
         }
         Insert: {
+          cgst?: number
           created_at?: string | null
           description?: string | null
           distributor_id: string
           gst_percent?: number | null
           hsn_code: string
+          hsn_from: number
+          hsn_to: number
           id?: string
+          igst?: number
           is_active?: boolean | null
+          sgst?: number
           updated_at?: string | null
         }
         Update: {
+          cgst?: number
           created_at?: string | null
           description?: string | null
           distributor_id?: string
           gst_percent?: number | null
           hsn_code?: string
+          hsn_from?: number
+          hsn_to?: number
           id?: string
+          igst?: number
           is_active?: boolean | null
+          sgst?: number
           updated_at?: string | null
         }
         Relationships: [
@@ -988,6 +1057,7 @@ export type Database = {
           cess_percent: number | null
           cost_price: number | null
           created_at: string
+          created_by: string | null
           description: string | null
           distributor_id: string
           gst_percent: number | null
@@ -1011,8 +1081,10 @@ export type Database = {
           sale_price: number
           sku: string
           stock_quantity: number | null
+          tenant_id: string | null
           unit: string | null
           updated_at: string
+          updated_by: string | null
           usage_application: string | null
           weight_kg: number | null
         }
@@ -1023,6 +1095,7 @@ export type Database = {
           cess_percent?: number | null
           cost_price?: number | null
           created_at?: string
+          created_by?: string | null
           description?: string | null
           distributor_id: string
           gst_percent?: number | null
@@ -1046,8 +1119,10 @@ export type Database = {
           sale_price?: number
           sku: string
           stock_quantity?: number | null
+          tenant_id?: string | null
           unit?: string | null
           updated_at?: string
+          updated_by?: string | null
           usage_application?: string | null
           weight_kg?: number | null
         }
@@ -1058,6 +1133,7 @@ export type Database = {
           cess_percent?: number | null
           cost_price?: number | null
           created_at?: string
+          created_by?: string | null
           description?: string | null
           distributor_id?: string
           gst_percent?: number | null
@@ -1081,12 +1157,21 @@ export type Database = {
           sale_price?: number
           sku?: string
           stock_quantity?: number | null
+          tenant_id?: string | null
           unit?: string | null
           updated_at?: string
+          updated_by?: string | null
           usage_application?: string | null
           weight_kg?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "fk_items_hsn_master"
+            columns: ["hsn_code_id"]
+            isOneToOne: false
+            referencedRelation: "hsn_master"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "items_brand_id_fkey"
             columns: ["brand_id"]
@@ -1126,106 +1211,96 @@ export type Database = {
       }
       ledger_entries: {
         Row: {
-          balance: number
-          created_at: string
-          credit_amount: number | null
-          debit_amount: number | null
-          distributor_id: string
+          created_at: string | null
+          created_by: string | null
+          credit: number | null
+          debit: number | null
+          description: string | null
           entry_date: string
-          entry_type: string
           id: string
-          narration: string | null
-          party_id: string
-          reference_id: string | null
-          reference_number: string | null
+          ledger_id: string
+          tenant_id: string
+          transaction_id: string
+          transaction_type: string
         }
         Insert: {
-          balance?: number
-          created_at?: string
-          credit_amount?: number | null
-          debit_amount?: number | null
-          distributor_id: string
+          created_at?: string | null
+          created_by?: string | null
+          credit?: number | null
+          debit?: number | null
+          description?: string | null
           entry_date?: string
-          entry_type: string
           id?: string
-          narration?: string | null
-          party_id: string
-          reference_id?: string | null
-          reference_number?: string | null
+          ledger_id: string
+          tenant_id: string
+          transaction_id: string
+          transaction_type: string
         }
         Update: {
-          balance?: number
-          created_at?: string
-          credit_amount?: number | null
-          debit_amount?: number | null
-          distributor_id?: string
+          created_at?: string | null
+          created_by?: string | null
+          credit?: number | null
+          debit?: number | null
+          description?: string | null
           entry_date?: string
-          entry_type?: string
           id?: string
-          narration?: string | null
-          party_id?: string
-          reference_id?: string | null
-          reference_number?: string | null
+          ledger_id?: string
+          tenant_id?: string
+          transaction_id?: string
+          transaction_type?: string
         }
         Relationships: [
           {
-            foreignKeyName: "ledger_entries_distributor_id_fkey"
-            columns: ["distributor_id"]
+            foreignKeyName: "fk_ledger_entries_transaction_voucher"
+            columns: ["transaction_id"]
             isOneToOne: false
-            referencedRelation: "distributor_profiles"
+            referencedRelation: "vouchers"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "ledger_entries_party_id_fkey"
-            columns: ["party_id"]
+            foreignKeyName: "ledger_entries_ledger_id_fkey"
+            columns: ["ledger_id"]
             isOneToOne: false
-            referencedRelation: "parties"
+            referencedRelation: "ledgers"
             referencedColumns: ["id"]
           },
         ]
       }
       ledger_groups: {
         Row: {
+          code: string | null
           created_at: string | null
-          distributor_id: string | null
           id: string
-          is_active: boolean | null
           is_system: boolean | null
           name: string
-          nature: string | null
+          nature: string
           parent_group_id: string | null
+          tenant_id: string
           updated_at: string | null
         }
         Insert: {
+          code?: string | null
           created_at?: string | null
-          distributor_id?: string | null
           id?: string
-          is_active?: boolean | null
           is_system?: boolean | null
           name: string
-          nature?: string | null
+          nature: string
           parent_group_id?: string | null
+          tenant_id: string
           updated_at?: string | null
         }
         Update: {
+          code?: string | null
           created_at?: string | null
-          distributor_id?: string | null
           id?: string
-          is_active?: boolean | null
           is_system?: boolean | null
           name?: string
-          nature?: string | null
+          nature?: string
           parent_group_id?: string | null
+          tenant_id?: string
           updated_at?: string | null
         }
         Relationships: [
-          {
-            foreignKeyName: "ledger_groups_distributor_id_fkey"
-            columns: ["distributor_id"]
-            isOneToOne: false
-            referencedRelation: "distributor_profiles"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "ledger_groups_parent_group_id_fkey"
             columns: ["parent_group_id"]
@@ -1278,13 +1353,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "ledger_transactions_ledger_id_fkey"
-            columns: ["ledger_id"]
-            isOneToOne: false
-            referencedRelation: "ledgers"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "ledger_transactions_voucher_id_fkey"
             columns: ["voucher_id"]
             isOneToOne: false
@@ -1297,83 +1365,48 @@ export type Database = {
         Row: {
           closing_balance: number | null
           created_at: string | null
-          description: string | null
-          distributor_id: string
-          group_id: string | null
-          group_name: string
+          current_balance: number | null
+          group_id: string
           id: string
-          is_active: boolean | null
           is_system: boolean | null
           name: string
           opening_balance: number | null
           opening_balance_type: string | null
-          party_id: string | null
-          tcs_applicable: boolean | null
-          tcs_rate: number | null
-          tds_applicable: boolean | null
-          tds_rate: number | null
+          tenant_id: string
           updated_at: string | null
         }
         Insert: {
           closing_balance?: number | null
           created_at?: string | null
-          description?: string | null
-          distributor_id: string
-          group_id?: string | null
-          group_name?: string
+          current_balance?: number | null
+          group_id: string
           id?: string
-          is_active?: boolean | null
           is_system?: boolean | null
           name: string
           opening_balance?: number | null
           opening_balance_type?: string | null
-          party_id?: string | null
-          tcs_applicable?: boolean | null
-          tcs_rate?: number | null
-          tds_applicable?: boolean | null
-          tds_rate?: number | null
+          tenant_id: string
           updated_at?: string | null
         }
         Update: {
           closing_balance?: number | null
           created_at?: string | null
-          description?: string | null
-          distributor_id?: string
-          group_id?: string | null
-          group_name?: string
+          current_balance?: number | null
+          group_id?: string
           id?: string
-          is_active?: boolean | null
           is_system?: boolean | null
           name?: string
           opening_balance?: number | null
           opening_balance_type?: string | null
-          party_id?: string | null
-          tcs_applicable?: boolean | null
-          tcs_rate?: number | null
-          tds_applicable?: boolean | null
-          tds_rate?: number | null
+          tenant_id?: string
           updated_at?: string | null
         }
         Relationships: [
-          {
-            foreignKeyName: "ledgers_distributor_id_fkey"
-            columns: ["distributor_id"]
-            isOneToOne: false
-            referencedRelation: "distributor_profiles"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "ledgers_group_id_fkey"
             columns: ["group_id"]
             isOneToOne: false
             referencedRelation: "ledger_groups"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "ledgers_party_id_fkey"
-            columns: ["party_id"]
-            isOneToOne: false
-            referencedRelation: "parties"
             referencedColumns: ["id"]
           },
         ]
@@ -1394,7 +1427,9 @@ export type Database = {
           quantity: number
           remark: string | null
           status: string | null
+          tenant_id: string | null
           updated_at: string | null
+          updated_by: string | null
         }
         Insert: {
           created_at?: string | null
@@ -1411,7 +1446,9 @@ export type Database = {
           quantity?: number
           remark?: string | null
           status?: string | null
+          tenant_id?: string | null
           updated_at?: string | null
+          updated_by?: string | null
         }
         Update: {
           created_at?: string | null
@@ -1428,7 +1465,9 @@ export type Database = {
           quantity?: number
           remark?: string | null
           status?: string | null
+          tenant_id?: string | null
           updated_at?: string | null
+          updated_by?: string | null
         }
         Relationships: [
           {
@@ -1517,7 +1556,9 @@ export type Database = {
           item_id: string
           location_id: string
           quantity: number
+          tenant_id: string | null
           updated_at: string | null
+          updated_by: string | null
         }
         Insert: {
           batch_number?: string | null
@@ -1529,7 +1570,9 @@ export type Database = {
           item_id: string
           location_id: string
           quantity?: number
+          tenant_id?: string | null
           updated_at?: string | null
+          updated_by?: string | null
         }
         Update: {
           batch_number?: string | null
@@ -1541,7 +1584,9 @@ export type Database = {
           item_id?: string
           location_id?: string
           quantity?: number
+          tenant_id?: string | null
           updated_at?: string | null
+          updated_by?: string | null
         }
         Relationships: [
           {
@@ -1583,7 +1628,9 @@ export type Database = {
           quantity: number
           remark: string | null
           status: string | null
+          tenant_id: string | null
           updated_at: string | null
+          updated_by: string | null
         }
         Insert: {
           created_at?: string | null
@@ -1600,7 +1647,9 @@ export type Database = {
           quantity?: number
           remark?: string | null
           status?: string | null
+          tenant_id?: string | null
           updated_at?: string | null
+          updated_by?: string | null
         }
         Update: {
           created_at?: string | null
@@ -1617,7 +1666,9 @@ export type Database = {
           quantity?: number
           remark?: string | null
           status?: string | null
+          tenant_id?: string | null
           updated_at?: string | null
+          updated_by?: string | null
         }
         Relationships: [
           {
@@ -1717,6 +1768,7 @@ export type Database = {
           id: string
           industry_type: string | null
           is_active: boolean | null
+          ledger_id: string | null
           legal_name: string | null
           mobile: string | null
           name: string
@@ -1730,8 +1782,10 @@ export type Database = {
           sales_executive_id: string | null
           sales_zone: string | null
           state: string
+          tenant_id: string | null
           type: string
           updated_at: string
+          updated_by: string | null
           village: string | null
           whatsapp: string | null
         }
@@ -1756,6 +1810,7 @@ export type Database = {
           id?: string
           industry_type?: string | null
           is_active?: boolean | null
+          ledger_id?: string | null
           legal_name?: string | null
           mobile?: string | null
           name: string
@@ -1769,8 +1824,10 @@ export type Database = {
           sales_executive_id?: string | null
           sales_zone?: string | null
           state: string
+          tenant_id?: string | null
           type: string
           updated_at?: string
+          updated_by?: string | null
           village?: string | null
           whatsapp?: string | null
         }
@@ -1795,6 +1852,7 @@ export type Database = {
           id?: string
           industry_type?: string | null
           is_active?: boolean | null
+          ledger_id?: string | null
           legal_name?: string | null
           mobile?: string | null
           name?: string
@@ -1808,8 +1866,10 @@ export type Database = {
           sales_executive_id?: string | null
           sales_zone?: string | null
           state?: string
+          tenant_id?: string | null
           type?: string
           updated_at?: string
+          updated_by?: string | null
           village?: string | null
           whatsapp?: string | null
         }
@@ -1819,6 +1879,13 @@ export type Database = {
             columns: ["distributor_id"]
             isOneToOne: false
             referencedRelation: "distributor_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "parties_ledger_id_fkey"
+            columns: ["ledger_id"]
+            isOneToOne: false
+            referencedRelation: "ledgers"
             referencedColumns: ["id"]
           },
         ]
@@ -2058,33 +2125,42 @@ export type Database = {
       price_structures: {
         Row: {
           created_at: string
+          created_by: string | null
           discount_percent: number | null
           distributor_id: string
           id: string
           is_active: boolean | null
           is_default: boolean | null
           name: string
+          tenant_id: string | null
           updated_at: string | null
+          updated_by: string | null
         }
         Insert: {
           created_at?: string
+          created_by?: string | null
           discount_percent?: number | null
           distributor_id: string
           id?: string
           is_active?: boolean | null
           is_default?: boolean | null
           name: string
+          tenant_id?: string | null
           updated_at?: string | null
+          updated_by?: string | null
         }
         Update: {
           created_at?: string
+          created_by?: string | null
           discount_percent?: number | null
           distributor_id?: string
           id?: string
           is_active?: boolean | null
           is_default?: boolean | null
           name?: string
+          tenant_id?: string | null
           updated_at?: string | null
+          updated_by?: string | null
         }
         Relationships: [
           {
@@ -2113,6 +2189,124 @@ export type Database = {
           id?: string
         }
         Relationships: []
+      }
+      purchase_invoice_items: {
+        Row: {
+          amount: number | null
+          cgst_amount: number | null
+          created_at: string | null
+          description: string
+          gst_rate: number | null
+          hsn_code: string | null
+          id: string
+          igst_amount: number | null
+          purchase_invoice_id: string
+          quantity: number | null
+          rate: number | null
+          sgst_amount: number | null
+          tenant_id: string
+        }
+        Insert: {
+          amount?: number | null
+          cgst_amount?: number | null
+          created_at?: string | null
+          description: string
+          gst_rate?: number | null
+          hsn_code?: string | null
+          id?: string
+          igst_amount?: number | null
+          purchase_invoice_id: string
+          quantity?: number | null
+          rate?: number | null
+          sgst_amount?: number | null
+          tenant_id: string
+        }
+        Update: {
+          amount?: number | null
+          cgst_amount?: number | null
+          created_at?: string | null
+          description?: string
+          gst_rate?: number | null
+          hsn_code?: string | null
+          id?: string
+          igst_amount?: number | null
+          purchase_invoice_id?: string
+          quantity?: number | null
+          rate?: number | null
+          sgst_amount?: number | null
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "purchase_invoice_items_purchase_invoice_id_fkey"
+            columns: ["purchase_invoice_id"]
+            isOneToOne: false
+            referencedRelation: "purchase_invoices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      purchase_invoices: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          due_date: string | null
+          grand_total: number | null
+          id: string
+          invoice_date: string
+          invoice_number: string
+          party_id: string
+          purchase_order_id: string | null
+          status: string | null
+          tenant_id: string
+          total_tax_amount: number | null
+          total_taxable_amount: number | null
+          updated_at: string | null
+          url: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          due_date?: string | null
+          grand_total?: number | null
+          id?: string
+          invoice_date: string
+          invoice_number: string
+          party_id: string
+          purchase_order_id?: string | null
+          status?: string | null
+          tenant_id: string
+          total_tax_amount?: number | null
+          total_taxable_amount?: number | null
+          updated_at?: string | null
+          url?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          due_date?: string | null
+          grand_total?: number | null
+          id?: string
+          invoice_date?: string
+          invoice_number?: string
+          party_id?: string
+          purchase_order_id?: string | null
+          status?: string | null
+          tenant_id?: string
+          total_tax_amount?: number | null
+          total_taxable_amount?: number | null
+          updated_at?: string | null
+          url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "purchase_invoices_party_id_fkey"
+            columns: ["party_id"]
+            isOneToOne: false
+            referencedRelation: "parties"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       purchase_order_items: {
         Row: {
@@ -2228,9 +2422,11 @@ export type Database = {
           sgst_amount: number | null
           status: string | null
           taxable_amount: number | null
+          tenant_id: string | null
           terms_conditions: Json | null
           transport_name: string | null
           updated_at: string | null
+          updated_by: string | null
         }
         Insert: {
           cgst_amount?: number | null
@@ -2255,9 +2451,11 @@ export type Database = {
           sgst_amount?: number | null
           status?: string | null
           taxable_amount?: number | null
+          tenant_id?: string | null
           terms_conditions?: Json | null
           transport_name?: string | null
           updated_at?: string | null
+          updated_by?: string | null
         }
         Update: {
           cgst_amount?: number | null
@@ -2282,9 +2480,11 @@ export type Database = {
           sgst_amount?: number | null
           status?: string | null
           taxable_amount?: number | null
+          tenant_id?: string | null
           terms_conditions?: Json | null
           transport_name?: string | null
           updated_at?: string | null
+          updated_by?: string | null
         }
         Relationships: [
           {
@@ -2307,59 +2507,74 @@ export type Database = {
         Row: {
           code: string
           created_at: string | null
+          created_by: string | null
           description: string | null
           gst_rate: number | null
           id: string
           is_active: boolean | null
+          tenant_id: string | null
         }
         Insert: {
           code: string
           created_at?: string | null
+          created_by?: string | null
           description?: string | null
           gst_rate?: number | null
           id?: string
           is_active?: boolean | null
+          tenant_id?: string | null
         }
         Update: {
           code?: string
           created_at?: string | null
+          created_by?: string | null
           description?: string | null
           gst_rate?: number | null
           id?: string
           is_active?: boolean | null
+          tenant_id?: string | null
         }
         Relationships: []
       }
       sales_zones: {
         Row: {
           created_at: string
+          created_by: string | null
           description: string | null
           distributor_id: string
           id: string
           is_active: boolean | null
           name: string
           remark: string | null
+          tenant_id: string | null
           updated_at: string | null
+          updated_by: string | null
         }
         Insert: {
           created_at?: string
+          created_by?: string | null
           description?: string | null
           distributor_id: string
           id?: string
           is_active?: boolean | null
           name: string
           remark?: string | null
+          tenant_id?: string | null
           updated_at?: string | null
+          updated_by?: string | null
         }
         Update: {
           created_at?: string
+          created_by?: string | null
           description?: string | null
           distributor_id?: string
           id?: string
           is_active?: boolean | null
           name?: string
           remark?: string | null
+          tenant_id?: string | null
           updated_at?: string | null
+          updated_by?: string | null
         }
         Relationships: [
           {
@@ -2381,6 +2596,7 @@ export type Database = {
           is_active: boolean | null
           name: string
           phone: string | null
+          tenant_id: string | null
           updated_at: string
           user_id: string
         }
@@ -2393,6 +2609,7 @@ export type Database = {
           is_active?: boolean | null
           name: string
           phone?: string | null
+          tenant_id?: string | null
           updated_at?: string
           user_id: string
         }
@@ -2405,6 +2622,7 @@ export type Database = {
           is_active?: boolean | null
           name?: string
           phone?: string | null
+          tenant_id?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -2522,6 +2740,7 @@ export type Database = {
       store_locations: {
         Row: {
           created_at: string
+          created_by: string | null
           distributor_id: string
           id: string
           is_final_location: boolean
@@ -2530,10 +2749,13 @@ export type Database = {
           remark: string | null
           store_level: number
           store_name: string
+          tenant_id: string | null
           updated_at: string
+          updated_by: string | null
         }
         Insert: {
           created_at?: string
+          created_by?: string | null
           distributor_id: string
           id?: string
           is_final_location?: boolean
@@ -2542,10 +2764,13 @@ export type Database = {
           remark?: string | null
           store_level?: number
           store_name: string
+          tenant_id?: string | null
           updated_at?: string
+          updated_by?: string | null
         }
         Update: {
           created_at?: string
+          created_by?: string | null
           distributor_id?: string
           id?: string
           is_final_location?: boolean
@@ -2554,7 +2779,9 @@ export type Database = {
           remark?: string | null
           store_level?: number
           store_name?: string
+          tenant_id?: string | null
           updated_at?: string
+          updated_by?: string | null
         }
         Relationships: [
           {
@@ -2677,35 +2904,44 @@ export type Database = {
         Row: {
           conditions: string
           created_at: string | null
+          created_by: string | null
           distributor_id: string
           id: string
           is_active: boolean | null
           is_default: boolean | null
+          tenant_id: string | null
           title: string
           type: string | null
           updated_at: string | null
+          updated_by: string | null
         }
         Insert: {
           conditions: string
           created_at?: string | null
+          created_by?: string | null
           distributor_id: string
           id?: string
           is_active?: boolean | null
           is_default?: boolean | null
+          tenant_id?: string | null
           title: string
           type?: string | null
           updated_at?: string | null
+          updated_by?: string | null
         }
         Update: {
           conditions?: string
           created_at?: string | null
+          created_by?: string | null
           distributor_id?: string
           id?: string
           is_active?: boolean | null
           is_default?: boolean | null
+          tenant_id?: string | null
           title?: string
           type?: string | null
           updated_at?: string | null
+          updated_by?: string | null
         }
         Relationships: [
           {
@@ -2721,32 +2957,41 @@ export type Database = {
         Row: {
           address: string | null
           created_at: string | null
+          created_by: string | null
           distributor_id: string
           id: string
           is_active: boolean | null
+          tenant_id: string | null
           transport_id: string
           transport_name: string
           updated_at: string | null
+          updated_by: string | null
         }
         Insert: {
           address?: string | null
           created_at?: string | null
+          created_by?: string | null
           distributor_id: string
           id?: string
           is_active?: boolean | null
+          tenant_id?: string | null
           transport_id: string
           transport_name: string
           updated_at?: string | null
+          updated_by?: string | null
         }
         Update: {
           address?: string | null
           created_at?: string | null
+          created_by?: string | null
           distributor_id?: string
           id?: string
           is_active?: boolean | null
+          tenant_id?: string | null
           transport_id?: string
           transport_name?: string
           updated_at?: string | null
+          updated_by?: string | null
         }
         Relationships: [
           {
@@ -2788,6 +3033,30 @@ export type Database = {
           inviter_id?: string
           role?: Database["public"]["Enums"]["app_role"]
           tenant_id?: string
+        }
+        Relationships: []
+      }
+      user_permissions: {
+        Row: {
+          access_level: string | null
+          created_at: string | null
+          created_by: string | null
+          resource_key: string
+          user_id: string
+        }
+        Insert: {
+          access_level?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          resource_key: string
+          user_id: string
+        }
+        Update: {
+          access_level?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          resource_key?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -2983,12 +3252,15 @@ export type Database = {
         Row: {
           auto_start_no: number | null
           created_at: string | null
+          created_by: string | null
           distributor_id: string
           id: string
           is_active: boolean | null
           is_default: boolean | null
           prefix_separator: string | null
+          tenant_id: string | null
           updated_at: string | null
+          updated_by: string | null
           voucher_name: string
           voucher_prefix: string
           year_format: string | null
@@ -2996,12 +3268,15 @@ export type Database = {
         Insert: {
           auto_start_no?: number | null
           created_at?: string | null
+          created_by?: string | null
           distributor_id: string
           id?: string
           is_active?: boolean | null
           is_default?: boolean | null
           prefix_separator?: string | null
+          tenant_id?: string | null
           updated_at?: string | null
+          updated_by?: string | null
           voucher_name: string
           voucher_prefix: string
           year_format?: string | null
@@ -3009,12 +3284,15 @@ export type Database = {
         Update: {
           auto_start_no?: number | null
           created_at?: string | null
+          created_by?: string | null
           distributor_id?: string
           id?: string
           is_active?: boolean | null
           is_default?: boolean | null
           prefix_separator?: string | null
+          tenant_id?: string | null
           updated_at?: string | null
+          updated_by?: string | null
           voucher_name?: string
           voucher_prefix?: string
           year_format?: string | null
@@ -3034,6 +3312,7 @@ export type Database = {
           address: string | null
           apply_round_off: boolean | null
           attachment_url: string | null
+          cancelled_at: string | null
           cess_amount: number | null
           cgst_amount: number | null
           city: string | null
@@ -3098,11 +3377,13 @@ export type Database = {
           tcs_percent: number | null
           tds_amount: number | null
           tds_percent: number | null
+          tenant_id: string | null
           terms_conditions: Json | null
           total_amount: number
           total_tax: number | null
           transport_name: string | null
           updated_at: string | null
+          updated_by: string | null
           valid_till: string | null
           voucher_date: string
           voucher_number: string
@@ -3112,6 +3393,7 @@ export type Database = {
           address?: string | null
           apply_round_off?: boolean | null
           attachment_url?: string | null
+          cancelled_at?: string | null
           cess_amount?: number | null
           cgst_amount?: number | null
           city?: string | null
@@ -3176,11 +3458,13 @@ export type Database = {
           tcs_percent?: number | null
           tds_amount?: number | null
           tds_percent?: number | null
+          tenant_id?: string | null
           terms_conditions?: Json | null
           total_amount?: number
           total_tax?: number | null
           transport_name?: string | null
           updated_at?: string | null
+          updated_by?: string | null
           valid_till?: string | null
           voucher_date?: string
           voucher_number: string
@@ -3190,6 +3474,7 @@ export type Database = {
           address?: string | null
           apply_round_off?: boolean | null
           attachment_url?: string | null
+          cancelled_at?: string | null
           cess_amount?: number | null
           cgst_amount?: number | null
           city?: string | null
@@ -3254,11 +3539,13 @@ export type Database = {
           tcs_percent?: number | null
           tds_amount?: number | null
           tds_percent?: number | null
+          tenant_id?: string | null
           terms_conditions?: Json | null
           total_amount?: number
           total_tax?: number | null
           transport_name?: string | null
           updated_at?: string | null
+          updated_by?: string | null
           valid_till?: string | null
           voucher_date?: string
           voucher_number?: string
@@ -3433,9 +3720,15 @@ export type Database = {
         Args: { p_created_by?: string; p_distributor_id: string }
         Returns: boolean
       }
+      can_access_tenant: { Args: { p_tenant_id: string }; Returns: boolean }
+      cancel_voucher: { Args: { p_voucher_id: string }; Returns: Json }
       create_gate_inward_atomic: {
         Args: { p_header: Json; p_items: Json }
         Returns: Json
+      }
+      create_ledger_for_party: {
+        Args: { p_party_id: string }
+        Returns: undefined
       }
       create_marking_atomic: {
         Args: { p_batches: Json; p_header: Json }
@@ -3451,6 +3744,10 @@ export type Database = {
             Args: { p_items: Json; p_ledgers?: Json; p_voucher: Json }
             Returns: Json
           }
+      debug_post_sales_invoice: {
+        Args: { p_invoice_id: string }
+        Returns: string
+      }
       fn_get_next_mrk_number: {
         Args: { p_distributor_id: string; p_prefix?: string }
         Returns: number
@@ -3522,6 +3819,10 @@ export type Database = {
         }[]
       }
       get_current_financial_year: { Args: never; Returns: string }
+      get_ledger_id_by_name: {
+        Args: { p_name: string; p_tenant_id: string }
+        Returns: string
+      }
       get_next_gi_number: {
         Args: { p_distributor_id: string }
         Returns: string
@@ -3551,6 +3852,26 @@ export type Database = {
         Returns: number
       }
       get_salesperson_distributor_id: { Args: never; Returns: string }
+      get_self_signup_users: {
+        Args: never
+        Returns: {
+          created_at: string
+          email: string
+          email_confirmed_at: string
+          id: string
+        }[]
+      }
+      get_tenant_dashboard_stats: {
+        Args: { p_end_date?: string; p_start_date?: string }
+        Returns: Json
+      }
+      get_tenant_distributor_id: { Args: never; Returns: string }
+      get_user_accessible_resources: {
+        Args: { p_user_id: string }
+        Returns: {
+          resource_key: string
+        }[]
+      }
       get_user_distributor_id: { Args: never; Returns: string }
       get_user_role: {
         Args: never
@@ -3584,11 +3905,31 @@ export type Database = {
         }
         Returns: undefined
       }
+      initialize_tenant_ledgers: {
+        Args: { target_tenant_id: string }
+        Returns: undefined
+      }
       is_admin: { Args: never; Returns: boolean }
       is_salesperson: { Args: never; Returns: boolean }
       is_superadmin: { Args: never; Returns: boolean }
       is_superadmin_user: { Args: never; Returns: boolean }
       is_tenant_superadmin: { Args: { p_tenant_id: string }; Returns: boolean }
+      post_payment_receipt_accounting: {
+        Args: { p_payment_id: string }
+        Returns: undefined
+      }
+      post_purchase_invoice_to_accounting: {
+        Args: { p_invoice_id: string }
+        Returns: undefined
+      }
+      post_purchase_voucher_accounting: {
+        Args: { p_voucher_id: string }
+        Returns: undefined
+      }
+      post_sales_invoice_to_accounting: {
+        Args: { p_invoice_id: string }
+        Returns: undefined
+      }
       preview_next_document_number: {
         Args: {
           p_distributor_id: string
@@ -3601,12 +3942,36 @@ export type Database = {
         Args: { p_ledger_id: string }
         Returns: number
       }
+      record_journal_entry: {
+        Args: {
+          p_description: string
+          p_entries: Json
+          p_entry_date: string
+          p_transaction_id: string
+          p_transaction_type: string
+        }
+        Returns: undefined
+      }
+      resolve_hsn_tax: {
+        Args: { p_distributor_id: string; p_hsn_code: number }
+        Returns: {
+          cgst: number
+          hsn_from: number
+          hsn_to: number
+          igst: number
+          sgst: number
+        }[]
+      }
       seed_default_ledgers: {
         Args: { p_distributor_id: string }
         Returns: undefined
       }
       seed_default_voucher_prefixes: {
         Args: { p_distributor_id: string }
+        Returns: undefined
+      }
+      sync_user_permissions: {
+        Args: { resource_keys: string[]; target_user_id: string }
         Returns: undefined
       }
       validate_invoice_stock: {
