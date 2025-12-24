@@ -107,12 +107,40 @@ export function useTerms(options: UseTermsOptions = {}) {
         },
     });
 
+    const updateTerm = useMutation({
+        mutationFn: async (formData: CreateTermData & { id: string }) => {
+            const { id, ...updateData } = formData;
+            const { data, error } = await supabase
+                .from('terms')
+                .update({
+                    title: updateData.title,
+                    conditions: updateData.conditions,
+                    type: updateData.type || null,
+                    is_default: updateData.is_default || false,
+                })
+                .eq('id', id)
+                .select()
+                .single();
+
+            if (error) throw error;
+            return data;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['terms'] });
+            toast.success('Term updated successfully');
+        },
+        onError: (error: Error) => {
+            toast.error(error.message || 'Failed to update term');
+        },
+    });
+
     return {
         terms: data?.data || [],
         totalCount: data?.count || 0,
         isLoading: isLoading || isProfileLoading,
         refetch,
         createTerm,
+        updateTerm,
         deleteTerm,
         profile,
     };

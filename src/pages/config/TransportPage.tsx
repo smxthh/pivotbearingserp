@@ -25,7 +25,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Plus, RefreshCw, Download, Settings, Trash2, Search } from 'lucide-react';
+import { Plus, RefreshCw, Download, Settings, Trash2, Search, Edit } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useTransports, Transport } from '@/hooks/useTransports';
 import { AddTransportDialog } from '@/components/config/AddTransportDialog';
@@ -45,6 +45,7 @@ export default function TransportPage() {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [recordToDelete, setRecordToDelete] = useState<Transport | null>(null);
+    const [transportToEdit, setTransportToEdit] = useState<Transport | null>(null);
 
     // Filters
     const [globalSearch, setGlobalSearch] = useState('');
@@ -68,7 +69,15 @@ export default function TransportPage() {
     const totalPages = Math.ceil(totalCount / pageSize);
 
     // Handlers
-    const handleAddClick = () => setIsDialogOpen(true);
+    const handleAddClick = () => {
+        setTransportToEdit(null);
+        setIsDialogOpen(true);
+    };
+
+    const handleEditClick = (record: Transport) => {
+        setTransportToEdit(record);
+        setIsDialogOpen(true);
+    };
 
     const handleDeleteClick = (record: Transport) => {
         setRecordToDelete(record);
@@ -219,6 +228,10 @@ export default function TransportPage() {
                                                     </Button>
                                                 </DropdownMenuTrigger>
                                                 <DropdownMenuContent align="start">
+                                                    <DropdownMenuItem onClick={() => handleEditClick(record)}>
+                                                        <Edit className="h-4 w-4 mr-2" />
+                                                        Edit
+                                                    </DropdownMenuItem>
                                                     <DropdownMenuItem
                                                         onClick={() => handleDeleteClick(record)}
                                                         className="text-destructive"
@@ -270,8 +283,15 @@ export default function TransportPage() {
                 </div>
             </div>
 
-            {/* Add Dialog */}
-            <AddTransportDialog open={isDialogOpen} onOpenChange={setIsDialogOpen} />
+            {/* Add/Edit Dialog */}
+            <AddTransportDialog
+                open={isDialogOpen}
+                onOpenChange={(open) => {
+                    setIsDialogOpen(open);
+                    if (!open) setTransportToEdit(null);
+                }}
+                transportToEdit={transportToEdit}
+            />
 
             {/* Delete Confirmation */}
             <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>

@@ -79,6 +79,7 @@ export interface Voucher {
     created_by: string | null;
     created_at: string;
     updated_at: string;
+    cancelled_at: string | null;
 
     // Joined fields
     party?: {
@@ -300,6 +301,7 @@ export function useVouchers(options: UseVouchersOptions = { realtime: true }) {
         return {
             ...voucher,
             items: items || [],
+            cancelled_at: (voucher as any).cancelled_at || null,
         } as unknown as Voucher;
     };
 
@@ -425,7 +427,10 @@ export function useVouchers(options: UseVouchersOptions = { realtime: true }) {
                 }
             }
 
-            return newVoucher as Voucher;
+            return {
+                ...newVoucher,
+                cancelled_at: null
+            } as unknown as Voucher;
         },
         onSuccess: (data) => {
             queryClient.invalidateQueries({ queryKey: ['vouchers'] });
@@ -467,36 +472,13 @@ export function useVouchers(options: UseVouchersOptions = { realtime: true }) {
         },
     });
 
-    // Cancel voucher (reverses ledger entries)
+    // Cancel voucher (Atomic RPC: renames number and frees it up)
     const cancelVoucher = useMutation({
         mutationFn: async (id: string) => {
-            // Get the voucher
-            const { data: voucher, error: fetchError } = await supabase
-                .from('vouchers')
-                .select('*')
-                .eq('id', id)
-                .single();
-
-            if (fetchError) throw fetchError;
-
-            // Delete existing ledger transactions (trigger will recalculate balances)
-            const { error: deleteTransError } = await supabase
-                .from('ledger_transactions')
-                .delete()
-                .eq('voucher_id', id);
-
-            if (deleteTransError) {
-                console.error('Error deleting ledger transactions:', deleteTransError);
-                throw deleteTransError;
-            }
-
-            // Update voucher status to cancelled
-            const { data, error } = await supabase
-                .from('vouchers')
-                .update({ status: 'cancelled' })
-                .eq('id', id)
-                .select()
-                .single();
+            // Call the atomic cancel RPC
+            const { data, error } = await (supabase.rpc as any)('cancel_voucher', {
+                p_voucher_id: id
+            });
 
             if (error) {
                 console.error('Error cancelling voucher:', error);
@@ -508,11 +490,65 @@ export function useVouchers(options: UseVouchersOptions = { realtime: true }) {
         onSuccess: (data) => {
             queryClient.invalidateQueries({ queryKey: ['vouchers'] });
             queryClient.invalidateQueries({ queryKey: ['ledgers'] });
-            toast.success(`Voucher ${data.voucher_number} cancelled`);
+            toast.success(`Voucher cancelled successfully`);
         },
         onError: (error: Error) => {
             toast.error(error.message || 'Failed to cancel voucher');
         },
+    });
+
+    // Post to Accounting (Phase 2 & 3 Integration)
+    const postToAccounting = useMutation({
+        mutationFn: async (id: string) => {
+            const { error } = await (supabase.rpc as any)('post_sales_invoice_to_accounting', {
+                p_invoice_id: id
+            });
+            if (error) throw error;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['vouchers'] });
+            queryClient.invalidateQueries({ queryKey: ['ledgers'] }); // Update ledger balance
+            toast.success('Successfully posted to Accounting Ledger');
+        },
+        onError: (error: Error) => {
+            toast.error(error.message || 'Failed to post accounting entry');
+        }
+    });
+
+    // Post Payment/Receipt to Accounting
+    const postPaymentToAccounting = useMutation({
+        mutationFn: async (id: string) => {
+            const { error } = await (supabase.rpc as any)('post_payment_receipt_accounting', {
+                p_payment_id: id
+            });
+            if (error) throw error;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['vouchers'] });
+            queryClient.invalidateQueries({ queryKey: ['ledgers'] });
+            toast.success('Successfully posted Payment/Receipt to Ledger');
+        },
+        onError: (error: Error) => {
+            toast.error(error.message || 'Failed to post transaction');
+        }
+    });
+
+    // Post Purchase to Accounting
+    const postPurchaseToAccounting = useMutation({
+        mutationFn: async (id: string) => {
+            const { error } = await (supabase.rpc as any)('post_purchase_voucher_accounting', {
+                p_voucher_id: id
+            });
+            if (error) throw error;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['vouchers'] });
+            queryClient.invalidateQueries({ queryKey: ['ledgers'] });
+            toast.success('Successfully posted Purchase Invoice to Ledger');
+        },
+        onError: (error: Error) => {
+            toast.error(error.message || 'Failed to post purchase invoice');
+        }
     });
 
     // Summary calculations
@@ -561,10 +597,14 @@ export function useVouchers(options: UseVouchersOptions = { realtime: true }) {
         createVoucher,
         createVoucherAtomic,
         cancelVoucher,
+        postToAccounting,
+        postPaymentToAccounting,
+        postPurchaseToAccounting,
 
         // Mutation states
         isCreating: createVoucher.isPending,
         isCancelling: cancelVoucher.isPending,
+        isPosting: postToAccounting.isPending || postPaymentToAccounting.isPending || postPurchaseToAccounting.isPending,
     };
 }
 

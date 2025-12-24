@@ -107,10 +107,10 @@ export function LedgerTransactionsDialog({
     const handleExport = () => {
         const headers = ['Date', 'Particulars', 'Voucher No.', 'Type', 'Debit', 'Credit', 'Balance'];
         const rows = entriesWithBalance.map((e) => [
-            e.date,
+            e.date === '-' ? '-' : formatDate(e.date), // Format date for Excel
             e.particulars,
             e.voucherNumber,
-            e.voucherType,
+            e.voucherType === '-' ? '-' : getVoucherTypeLabel(e.voucherType),
             e.debit || '',
             e.credit || '',
             `${Math.abs(e.balance)} ${e.balance >= 0 ? 'Dr' : 'Cr'}`,
@@ -159,8 +159,8 @@ export function LedgerTransactionsDialog({
                                 <Badge variant="secondary">{ledger.group_name}</Badge>
                                 <span className="text-sm text-muted-foreground">
                                     Closing Balance:{' '}
-                                    <span className={ledger.closing_balance >= 0 ? 'text-success font-semibold' : 'text-destructive font-semibold'}>
-                                        {formatCurrency(Math.abs(ledger.closing_balance))} {ledger.closing_balance >= 0 ? 'Dr' : 'Cr'}
+                                    <span className={(ledger.current_balance ?? ledger.closing_balance ?? 0) >= 0 ? 'text-success font-semibold' : 'text-destructive font-semibold'}>
+                                        {formatCurrency(Math.abs(ledger.current_balance ?? ledger.closing_balance ?? 0))} {(ledger.current_balance ?? ledger.closing_balance ?? 0) >= 0 ? 'Dr' : 'Cr'}
                                     </span>
                                 </span>
                             </div>
@@ -261,8 +261,8 @@ export function LedgerTransactionsDialog({
                     </div>
                     <div>
                         <span className="text-sm text-muted-foreground">Closing Balance:</span>
-                        <span className={`ml-2 font-bold ${ledger.closing_balance >= 0 ? 'text-success' : 'text-destructive'}`}>
-                            {formatCurrency(Math.abs(ledger.closing_balance))} {ledger.closing_balance >= 0 ? 'Dr' : 'Cr'}
+                        <span className={`ml-2 font-bold ${(ledger.current_balance ?? ledger.closing_balance ?? 0) >= 0 ? 'text-success' : 'text-destructive'}`}>
+                            {formatCurrency(Math.abs(ledger.current_balance ?? ledger.closing_balance ?? 0))} {(ledger.current_balance ?? ledger.closing_balance ?? 0) >= 0 ? 'Dr' : 'Cr'}
                         </span>
                     </div>
                 </div>

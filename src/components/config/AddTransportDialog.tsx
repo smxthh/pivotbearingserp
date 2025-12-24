@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { useTransports } from '@/hooks/useTransports';
+import { useTransports, Transport } from '@/hooks/useTransports';
 
 const formSchema = z.object({
     transport_name: z.string().min(1, 'Transport Name is required'),
@@ -26,10 +26,12 @@ type FormData = z.infer<typeof formSchema>;
 interface AddTransportDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
+    transportToEdit?: Transport | null;
 }
 
-export function AddTransportDialog({ open, onOpenChange }: AddTransportDialogProps) {
-    const { createTransport } = useTransports();
+export function AddTransportDialog({ open, onOpenChange, transportToEdit }: AddTransportDialogProps) {
+    const { createTransport, updateTransport } = useTransports();
+    const isEditMode = !!transportToEdit;
 
     const {
         register,
@@ -47,20 +49,37 @@ export function AddTransportDialog({ open, onOpenChange }: AddTransportDialogPro
 
     useEffect(() => {
         if (open) {
-            reset({
-                transport_name: '',
-                transport_id: '',
-                address: '',
-            });
+            if (isEditMode && transportToEdit) {
+                reset({
+                    transport_name: transportToEdit.transport_name,
+                    transport_id: transportToEdit.transport_id,
+                    address: transportToEdit.address || '',
+                });
+            } else {
+                reset({
+                    transport_name: '',
+                    transport_id: '',
+                    address: '',
+                });
+            }
         }
-    }, [open, reset]);
+    }, [open, reset, isEditMode, transportToEdit]);
 
     const onSubmit = async (data: FormData) => {
-        await createTransport.mutateAsync({
-            transport_name: data.transport_name,
-            transport_id: data.transport_id,
-            address: data.address || undefined,
-        });
+        if (isEditMode && transportToEdit) {
+            await updateTransport.mutateAsync({
+                id: transportToEdit.id,
+                transport_name: data.transport_name,
+                transport_id: data.transport_id,
+                address: data.address || undefined,
+            });
+        } else {
+            await createTransport.mutateAsync({
+                transport_name: data.transport_name,
+                transport_id: data.transport_id,
+                address: data.address || undefined,
+            });
+        }
         onOpenChange(false);
     };
 
@@ -68,7 +87,7 @@ export function AddTransportDialog({ open, onOpenChange }: AddTransportDialogPro
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-[600px]">
                 <DialogHeader className="bg-primary text-primary-foreground px-6 py-4 -mx-6 -mt-6 rounded-t-lg">
-                    <DialogTitle>Add Transport</DialogTitle>
+                    <DialogTitle>{isEditMode ? 'Edit Transport' : 'Add Transport'}</DialogTitle>
                 </DialogHeader>
 
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 pt-4">
@@ -113,8 +132,8 @@ export function AddTransportDialog({ open, onOpenChange }: AddTransportDialogPro
                         <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
                             Close
                         </Button>
-                        <Button type="submit" disabled={createTransport.isPending}>
-                            {createTransport.isPending ? 'Saving...' : 'Save'}
+                        <Button type="submit" disabled={createTransport.isPending || updateTransport.isPending}>
+                            {(createTransport.isPending || updateTransport.isPending) ? 'Saving...' : 'Save'}
                         </Button>
                     </DialogFooter>
                 </form>

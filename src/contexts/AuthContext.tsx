@@ -76,8 +76,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setSession(session);
         setUser(session?.user ?? null);
 
-        // Clear ALL cached data when user changes to prevent showing old user's data
-        if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
+        // Clear ALL cached data only when user explicitly SIGNS OUT
+        if (event === 'SIGNED_OUT') {
           // Clear all queries from the cache
           queryClient.clear();
           console.log('[Auth] Cleared all query cache on', event);
@@ -89,9 +89,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
 
         if (session?.user) {
-          setTimeout(() => {
-            fetchUserRole(session.user.id);
-          }, 0);
+          fetchUserRole(session.user.id);
         } else {
           setRole(null);
           setTenantId(null);

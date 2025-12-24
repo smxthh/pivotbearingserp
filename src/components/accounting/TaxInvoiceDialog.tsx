@@ -137,7 +137,7 @@ export function TaxInvoiceDialog({ open, onOpenChange }: TaxInvoiceDialogProps) 
         reset,
         setValue,
         watch,
-        formState: { errors },
+        formState: { errors, dirtyFields },
     } = useForm<FormData>({
         resolver: zodResolver(formSchema),
         defaultValues: {
@@ -157,6 +157,24 @@ export function TaxInvoiceDialog({ open, onOpenChange }: TaxInvoiceDialogProps) 
 
     const watchedPartyId = watch('party_id');
     const watchedInvPrefix = watch('inv_prefix');
+
+    // Find the raw prefix (e.g. "RM/") corresponding to the selected formatted prefix (e.g. "RM/25-26/")
+    // This is needed because the database functions expect the base prefix + separator to find the record.
+    const rawPrefix = useMemo(() => {
+        if (!watchedInvPrefix || dbPrefixes.length === 0) return null;
+        // Find the prefix record that matches the start of the formatted string
+        const match = dbPrefixes.find(p => {
+            const base = `${p.voucher_prefix}${p.prefix_separator}`;
+            return watchedInvPrefix.startsWith(base);
+        });
+        return match ? `${match.voucher_prefix}${match.prefix_separator}` : null;
+    }, [watchedInvPrefix, dbPrefixes]);
+
+    // Document Numbering
+    const { previewNumber, incrementNumber, refetchPreview } = useDocumentNumber({
+        voucherName: 'Sales Invoice', // Assuming Tax Invoice maps to Sales Invoice prefixes
+        prefix: rawPrefix || watchedInvPrefix // Fallback to watched if logic fails, though raw is preferred
+    });
 
     // Invoice number is now manually entered by user
     const watchedApplyRoundOff = watch('apply_round_off');
@@ -278,8 +296,11 @@ export function TaxInvoiceDialog({ open, onOpenChange }: TaxInvoiceDialogProps) 
             setItems([]);
             setLinkedChallan('');
             lastLoadedChallanRef.current = '';
+
+            // Force fetch latest number
+            refetchPreview();
         }
-    }, [open, reset, invPrefixes]);
+    }, [open, reset, invPrefixes, refetchPreview]);
 
     // Handle item save (add more)
     const handleItemSave = (item: InvoiceItem) => {
@@ -312,38 +333,22 @@ export function TaxInvoiceDialog({ open, onOpenChange }: TaxInvoiceDialogProps) 
         setItems(items.filter((_, i) => i !== index));
     };
 
-    // Find the raw prefix (e.g. "RM/") corresponding to the selected formatted prefix (e.g. "RM/25-26/")
-    // This is needed because the database functions expect the base prefix + separator to find the record.
-    const rawPrefix = useMemo(() => {
-        if (!watchedInvPrefix || dbPrefixes.length === 0) return null;
-        // Find the prefix record that matches the start of the formatted string
-        const match = dbPrefixes.find(p => {
-            const base = `${p.voucher_prefix}${p.prefix_separator}`;
-            return watchedInvPrefix.startsWith(base);
-        });
-        return match ? `${match.voucher_prefix}${match.prefix_separator}` : null;
-    }, [watchedInvPrefix, dbPrefixes]);
 
-    // Document Numbering
-    const { previewNumber, incrementNumber } = useDocumentNumber({
-        voucherName: 'Sales Invoice', // Assuming Tax Invoice maps to Sales Invoice prefixes
-        prefix: rawPrefix || watchedInvPrefix // Fallback to watched if logic fails, though raw is preferred
-    });
 
     // Auto-populate document number from preview if not set manually or is default (1)
     const watchedInvNumber = watch('inv_number');
     useEffect(() => {
-        // If preview is available, and current value is either empty or the default '1', update it.
-        // We also check if the dialog is open to ensure we update when re-opening.
-        if (open && previewNumber && (!watchedInvNumber || watchedInvNumber === 1)) {
-            const parts = previewNumber.split('/');
+        // If preview is available, and the user hasn't manually edited the field, update it.
+        // We checking if the dialog is open to ensure we update when re-opening.
+        if (open && previewNumber && !dirtyFields.inv_number) {
+            const parts = previewNumber.split(/[/ -]/);
             const numStr = parts[parts.length - 1];
             const num = parseInt(numStr);
             if (!isNaN(num)) {
                 setValue('inv_number', num);
             }
         }
-    }, [open, previewNumber, watchedInvNumber, setValue]);
+    }, [open, previewNumber, watchedInvNumber, setValue, dirtyFields.inv_number]);
 
     // Submit handler
     const onSubmit = async (data: FormData) => {
@@ -502,11 +507,21 @@ export function TaxInvoiceDialog({ open, onOpenChange }: TaxInvoiceDialogProps) 
                 remarks: item.remark,
             }));
 
-            // NOTE: inv_number is NOT sent - database trigger generates it atomically
+            // Construct the voucher number parts
+            // voucherNumberPrefix is already defined above
+
+            // If user provided a specific number (and it's not just the default 1 or empty), we want to use it
+            // However, the backend trigger logic handles "empty" inv_number by auto-generating it
+            // So we only send inv_number if we want to FORCE it
+
+            const invNumberStr = data.inv_number ? data.inv_number.toString() : '';
+            const fullVoucherNumber = invNumberStr ? `${voucherNumberPrefix}${invNumberStr}` : voucherNumberPrefix;
+
             await createVoucherAtomic.mutateAsync({
                 voucher: {
                     voucher_type: 'tax_invoice',
-                    voucher_number: voucherNumberPrefix, // Trigger will append atomic number
+                    voucher_number: fullVoucherNumber, // If inv_number is present, this is fully formed. If not, trigger appends.
+                    inv_number: invNumberStr, // Pass explicit number to backend
                     voucher_date: data.inv_date,
                     due_date: data.due_date || null,
                     party_id: data.party_id,
@@ -521,7 +536,6 @@ export function TaxInvoiceDialog({ open, onOpenChange }: TaxInvoiceDialogProps) 
                     status: 'confirmed',
                     memo_type: data.memo_type,
                     inv_prefix: data.inv_prefix,
-                    // inv_number: REMOVED - database trigger generates atomically
                     gst_type: data.gst_type,
                     ship_to: data.ship_to,
                     po_number: data.po_number,

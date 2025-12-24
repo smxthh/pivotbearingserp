@@ -51,7 +51,9 @@ import TopProducts from "@/pages/reports/TopProducts";
 import StateWiseSales from "@/pages/reports/StateWiseSales";
 import Profile from "@/pages/Profile";
 import UserManagement from "@/pages/admin/UserManagement";
+import AdminPermissionsPage from "@/pages/admin/AdminPermissionsPage";
 import DataExportPage from "@/pages/admin/DataExportPage";
+import AccessDenied from "@/pages/AccessDenied";
 import StoreLocationPage from "@/pages/store/StoreLocationPage";
 import GateInwardPage from "@/pages/store/GateInwardPage";
 import MarkingPage from "@/pages/store/MarkingPage";
@@ -78,6 +80,7 @@ const App = () => (
             <Routes>
               {/* Public Auth Route */}
               <Route path="/auth" element={<Auth />} />
+              <Route path="/access-denied" element={<AccessDenied />} />
 
               {/* Pending Verification - no role required */}
               <Route
@@ -105,6 +108,14 @@ const App = () => (
                           element={
                             <RoleBasedRoute allowedRoles={['superadmin', 'admin']}>
                               <UserManagement />
+                            </RoleBasedRoute>
+                          }
+                        />
+                        <Route
+                          path="/admin/permissions"
+                          element={
+                            <RoleBasedRoute allowedRoles={['superadmin']}>
+                              <AdminPermissionsPage />
                             </RoleBasedRoute>
                           }
                         />

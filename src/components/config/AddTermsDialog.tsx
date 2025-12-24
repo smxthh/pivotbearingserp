@@ -20,7 +20,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import { useTerms } from '@/hooks/useTerms';
+import { useTerms, Term } from '@/hooks/useTerms';
 
 const formSchema = z.object({
     title: z.string().min(1, 'Title is required'),
@@ -34,10 +34,12 @@ type FormData = z.infer<typeof formSchema>;
 interface AddTermsDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
+    termToEdit?: Term | null;
 }
 
-export function AddTermsDialog({ open, onOpenChange }: AddTermsDialogProps) {
-    const { createTerm } = useTerms();
+export function AddTermsDialog({ open, onOpenChange, termToEdit }: AddTermsDialogProps) {
+    const { createTerm, updateTerm } = useTerms();
+    const isEditMode = !!termToEdit;
 
     const {
         register,
@@ -61,22 +63,41 @@ export function AddTermsDialog({ open, onOpenChange }: AddTermsDialogProps) {
 
     useEffect(() => {
         if (open) {
-            reset({
-                title: '',
-                conditions: '',
-                type: '',
-                is_default: false,
-            });
+            if (isEditMode && termToEdit) {
+                reset({
+                    title: termToEdit.title,
+                    conditions: termToEdit.conditions,
+                    type: termToEdit.type || '',
+                    is_default: termToEdit.is_default || false,
+                });
+            } else {
+                reset({
+                    title: '',
+                    conditions: '',
+                    type: '',
+                    is_default: false,
+                });
+            }
         }
-    }, [open, reset]);
+    }, [open, reset, isEditMode, termToEdit]);
 
     const onSubmit = async (data: FormData) => {
-        await createTerm.mutateAsync({
-            title: data.title,
-            conditions: data.conditions,
-            type: data.type || null,
-            is_default: data.is_default,
-        });
+        if (isEditMode && termToEdit) {
+            await updateTerm.mutateAsync({
+                id: termToEdit.id,
+                title: data.title,
+                conditions: data.conditions,
+                type: data.type || null,
+                is_default: data.is_default,
+            });
+        } else {
+            await createTerm.mutateAsync({
+                title: data.title,
+                conditions: data.conditions,
+                type: data.type || null,
+                is_default: data.is_default,
+            });
+        }
         onOpenChange(false);
     };
 
@@ -84,7 +105,7 @@ export function AddTermsDialog({ open, onOpenChange }: AddTermsDialogProps) {
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-[600px]">
                 <DialogHeader className="bg-primary text-primary-foreground px-6 py-4 -mx-6 -mt-6 rounded-t-lg">
-                    <DialogTitle>Add Terms</DialogTitle>
+                    <DialogTitle>{isEditMode ? 'Edit Terms' : 'Add Terms'}</DialogTitle>
                 </DialogHeader>
 
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 pt-4">
@@ -157,12 +178,12 @@ export function AddTermsDialog({ open, onOpenChange }: AddTermsDialogProps) {
                         <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
                             Close
                         </Button>
-                        <Button type="submit" disabled={createTerm.isPending}>
-                            {createTerm.isPending ? 'Saving...' : 'Save'}
+                        <Button type="submit" disabled={createTerm.isPending || updateTerm.isPending}>
+                            {(createTerm.isPending || updateTerm.isPending) ? 'Saving...' : 'Save'}
                         </Button>
                     </DialogFooter>
                 </form>
             </DialogContent>
-        </Dialog>
+        </Dialog >
     );
 }

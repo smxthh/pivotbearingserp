@@ -47,6 +47,7 @@ import { cn } from '@/lib/utils';
 import { useApp } from '@/contexts/AppContext';
 import { useAuth, AppRole } from '@/contexts/AuthContext';
 import { useDistributorProfile } from '@/hooks/useDistributorProfile';
+import { useUserPermissions, NAV_ITEM_TO_RESOURCE } from '@/hooks/useUserPermissions';
 
 interface NavItem {
   title: string;
@@ -190,6 +191,12 @@ const menuGroups: MenuGroup[] = [
         allowedRoles: ['superadmin', 'admin']
       },
       {
+        title: 'Permissions',
+        href: '/admin/permissions',
+        icon: ShieldCheck,
+        allowedRoles: ['superadmin']
+      },
+      {
         title: 'Data Export',
         href: '/admin/export',
         icon: Archive,
@@ -220,10 +227,10 @@ function MenuSection({
   expandedGroups: string[];
   toggleGroup: (title: string) => void;
   isActive: (href: string) => boolean;
-  canAccess: (allowedRoles?: AppRole[]) => boolean;
+  canAccess: (allowedRoles?: AppRole[], itemTitle?: string) => boolean;
   isGroupActive: (item: NavItem) => boolean;
 }) {
-  const filteredItems = items.filter(item => canAccess(item.allowedRoles));
+  const filteredItems = items.filter(item => canAccess(item.allowedRoles, item.title));
 
   if (filteredItems.length === 0) return null;
 
@@ -270,7 +277,7 @@ function MenuItem({
   expandedGroups: string[];
   toggleGroup: (title: string) => void;
   isActive: (href: string) => boolean;
-  canAccess: (allowedRoles?: AppRole[]) => boolean;
+  canAccess: (allowedRoles?: AppRole[], itemTitle?: string) => boolean;
   isGroupActive: (item: NavItem) => boolean;
 }) {
   const hasChildren = item.children && item.children.length > 0;
@@ -353,7 +360,7 @@ function MenuItem({
                 <div className="absolute left-[6px] top-0 bottom-2 w-px bg-slate-200" />
 
                 {item.children
-                  .filter(child => canAccess(child.allowedRoles))
+                  .filter(child => canAccess(child.allowedRoles, child.title))
                   .map((child, childIndex, filteredChildren) => {
                     const ChildIcon = child.icon || FileText;
                     const isChildActive = isActive(child.href);
@@ -409,6 +416,7 @@ export function AppSidebar() {
   const { sidebarCollapsed, toggleSidebar } = useApp();
   const { role } = useAuth();
   const { profile } = useDistributorProfile();
+  const { hasAccess, isSuperadmin, hasAnyPermissions } = useUserPermissions();
   const [expandedGroups, setExpandedGroups] = useState<string[]>([]);
 
   const toggleGroup = (title: string) => {
@@ -423,12 +431,24 @@ export function AppSidebar() {
   const isGroupActive = (item: NavItem) =>
     item.children?.some((child) => location.pathname === child.href) || false;
 
-  const canAccess = (allowedRoles?: AppRole[]) => {
+  const canAccess = (allowedRoles?: AppRole[], itemTitle?: string) => {
     if (!allowedRoles) return true;
     if (!role) return false;
     // Superadmin has access to everything
     if (role === 'superadmin') return true;
-    return allowedRoles.includes(role);
+
+    // First check role-based access
+    if (!allowedRoles.includes(role)) return false;
+
+    // For admin users, also check dynamic permissions
+    if (role === 'admin' && itemTitle) {
+      const resourceKey = NAV_ITEM_TO_RESOURCE[itemTitle];
+      if (resourceKey && !hasAccess(resourceKey)) {
+        return false;
+      }
+    }
+
+    return true;
   };
 
   if (sidebarCollapsed) {

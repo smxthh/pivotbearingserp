@@ -104,12 +104,39 @@ export function useTransports(options: UseTransportsOptions = {}) {
         },
     });
 
+    const updateTransport = useMutation({
+        mutationFn: async (formData: CreateTransportData & { id: string }) => {
+            const { id, ...updateData } = formData;
+            const { data, error } = await supabase
+                .from('transports')
+                .update({
+                    transport_name: updateData.transport_name,
+                    transport_id: updateData.transport_id,
+                    address: updateData.address || null,
+                })
+                .eq('id', id)
+                .select()
+                .single();
+
+            if (error) throw error;
+            return data;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['transports'] });
+            toast.success('Transport updated successfully');
+        },
+        onError: (error: Error) => {
+            toast.error(error.message || 'Failed to update transport');
+        },
+    });
+
     return {
         transports: data?.data || [],
         totalCount: data?.count || 0,
         isLoading: isLoading || isProfileLoading,
         refetch,
         createTransport,
+        updateTransport,
         deleteTransport,
         profile,
     };

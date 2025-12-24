@@ -9,6 +9,7 @@ import {
     DialogContent,
     DialogHeader,
     DialogTitle,
+    DialogDescription,
     DialogFooter,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -318,6 +319,9 @@ export function SalesQuotationDialog({ open, onOpenChange, sourceEnquiryId }: Sa
                 <DialogContent className="sm:max-w-[1000px] max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
                         <DialogTitle className="text-lg font-semibold">Sales Quotation</DialogTitle>
+                        <DialogDescription className="sr-only">
+                            Create a sales quotation for a potential customer with item pricing and validity terms.
+                        </DialogDescription>
                     </DialogHeader>
 
                     <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">

@@ -9,6 +9,7 @@ import {
     DialogContent,
     DialogHeader,
     DialogTitle,
+    DialogDescription,
     DialogFooter,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -38,6 +39,7 @@ import { SearchablePartySelect } from '@/components/shared/SearchablePartySelect
 import { ItemSelectionDialog, InvoiceItem } from '@/components/accounting/ItemSelectionDialog';
 import * as SelectPrimitive from '@radix-ui/react-select';
 import { useVoucherPrefixesForType } from '@/hooks/useVoucherPrefixes';
+import { useDocumentNumber } from '@/hooks/useDocumentNumber';
 
 // Form schema
 const formSchema = z.object({
@@ -89,7 +91,7 @@ export function PurchaseInvoiceDialog({ open, onOpenChange }: PurchaseInvoiceDia
         reset,
         setValue,
         watch,
-        formState: { errors },
+        formState: { errors, dirtyFields },
     } = useForm<FormData>({
         resolver: zodResolver(formSchema),
         defaultValues: {
@@ -111,7 +113,25 @@ export function PurchaseInvoiceDialog({ open, onOpenChange }: PurchaseInvoiceDia
     const watchedPartyId = watch('party_id');
     const watchedPrefix = watch('doc_prefix');
 
-    // Invoice number is now manually entered by user
+    // Document Numbering
+    const { previewNumber, incrementNumber, refetchPreview } = useDocumentNumber({
+        voucherName: 'Purchase Invoice',
+        prefix: watchedPrefix
+    });
+
+    // Auto-populate document number from preview if not set manually
+    const watchedDocNumber = watch('doc_number');
+    useEffect(() => {
+        if (open && previewNumber && !dirtyFields.doc_number) {
+            // Updated to handle multiple separators: / or - or space
+            const parts = previewNumber.split(/[/ -]/);
+            const numStr = parts[parts.length - 1];
+            const num = parseInt(numStr);
+            if (!isNaN(num)) {
+                setValue('doc_number', num);
+            }
+        }
+    }, [open, previewNumber, watchedDocNumber, setValue, dirtyFields.doc_number]);
 
     // Get selected party
     const selectedParty = parties.find(p => p.id === watchedPartyId);
@@ -164,8 +184,11 @@ export function PurchaseInvoiceDialog({ open, onOpenChange }: PurchaseInvoiceDia
                 narration: '',
             });
             setItems([]);
+
+            // Force fetch latest number
+            refetchPreview();
         }
-    }, [open, reset, defaultPrefix, prefixes]);
+    }, [open, reset, defaultPrefix, prefixes, refetchPreview]);
 
     // Handle item save (add more)
     const handleItemSave = (item: InvoiceItem) => {
@@ -294,6 +317,7 @@ export function PurchaseInvoiceDialog({ open, onOpenChange }: PurchaseInvoiceDia
                 voucher: {
                     voucher_type: 'purchase_invoice',
                     voucher_number: voucherNumber, // Manual entry
+                    inv_number: data.doc_number.toString(), // Explicitly pass number for sequence tracking
                     reference_number: data.invoice_number,
                     voucher_date: data.voucher_date,
                     due_date: data.due_date || null,
@@ -331,6 +355,9 @@ export function PurchaseInvoiceDialog({ open, onOpenChange }: PurchaseInvoiceDia
                 <DialogContent className="sm:max-w-[900px] max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
                         <DialogTitle className="text-lg font-semibold">Purchase Invoice</DialogTitle>
+                        <DialogDescription className="sr-only">
+                            Create a new purchase invoice by entering supplier details, items, and tax information.
+                        </DialogDescription>
                     </DialogHeader>
 
                     <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">

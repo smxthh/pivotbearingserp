@@ -4,7 +4,7 @@ import { format } from 'date-fns';
 import { DatePicker } from '@/components/ui/date-picker';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -222,6 +222,9 @@ export function TCSTDSPaymentDialog({ open, onOpenChange }: TCSTDSPaymentDialogP
             <DialogContent className="sm:max-w-[900px] max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle className="text-lg font-semibold">Add Voucher</DialogTitle>
+                    <DialogDescription className="sr-only">
+                        Form to record TCS or TDS payment details including party, bank, and challan information.
+                    </DialogDescription>
                 </DialogHeader>
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                     {/* Row 1 */}

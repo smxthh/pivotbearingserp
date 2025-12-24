@@ -30,6 +30,7 @@ export interface Ledger {
     party_id: string | null;
     opening_balance: number;
     opening_balance_type: 'Dr' | 'Cr';
+    current_balance?: number; // Added for new accounting schema (optional for backward compatibility)
     closing_balance: number;
     description: string | null;
     is_system: boolean;
@@ -165,17 +166,15 @@ export function useLedgers(options: UseLedgersOptions = { realtime: true }) {
                 .from('ledgers')
                 .select(`
           *,
-          party:parties(id, name),
-          group:ledger_groups(id, name, nature)
+          group:ledger_groups!group_id(id, name, nature)
         `)
                 .order('name', { ascending: true });
 
-            if (options.groupName) {
-                query = query.eq('group_name', options.groupName);
-            }
+            // Note: group_name doesn't exist in new schema, we join to ledger_groups
+            // If filtering by group name is needed, we'll do it client-side
 
             if (options.isActive !== undefined) {
-                query = query.eq('is_active', options.isActive);
+                query = query.eq('is_system', options.isActive);
             }
 
             const { data, error } = await query;
@@ -185,7 +184,19 @@ export function useLedgers(options: UseLedgersOptions = { realtime: true }) {
                 throw error;
             }
 
-            return data as unknown as Ledger[];
+            // Map to expected format with group_name
+            const mappedData = (data || []).map((ledger: any) => ({
+                ...ledger,
+                group_name: ledger.group?.name || 'Uncategorized',
+                distributor_id: ledger.tenant_id, // For backward compatibility
+            }));
+
+            // Client-side filter by group name if specified
+            if (options.groupName) {
+                return mappedData.filter((l: any) => l.group_name === options.groupName);
+            }
+
+            return mappedData as unknown as Ledger[];
         },
         enabled: !!user,
     });
@@ -212,14 +223,24 @@ export function useLedgers(options: UseLedgersOptions = { realtime: true }) {
 
     // Get ledger transactions
     const getLedgerTransactions = async (ledgerId: string): Promise<LedgerTransaction[]> => {
-        const { data, error } = await supabase
-            .from('ledger_transactions')
+        // Cast to any to avoid "excessively deep type instantiation" error with complex select
+        const client: any = supabase;
+        const { data, error } = await client
+            .from('ledger_entries')
             .select(`
-        *,
-        voucher:vouchers(id, voucher_type, voucher_number, party_name)
-      `)
+                id,
+                distributor_id:tenant_id,
+                voucher_id:transaction_id,
+                ledger_id,
+                transaction_date:entry_date,
+                debit_amount:debit,
+                credit_amount:credit,
+                narration:description,
+                created_at,
+                voucher:vouchers!transaction_id(id, voucher_type, voucher_number, party_name)
+            `)
             .eq('ledger_id', ledgerId)
-            .order('transaction_date', { ascending: false })
+            .order('entry_date', { ascending: false })
             .order('created_at', { ascending: false });
 
         if (error) {
@@ -239,9 +260,9 @@ export function useLedgers(options: UseLedgersOptions = { realtime: true }) {
                 .from('ledgers')
                 .insert({
                     ...ledger,
-                    distributor_id: distributorId,
-                    closing_balance: ledger.opening_balance || 0,
-                })
+                    tenant_id: distributorId,
+                    current_balance: ledger.opening_balance || 0,
+                } as any) // Type assertion needed until types are regenerated
                 .select()
                 .single();
 
@@ -456,14 +477,23 @@ export function useLedger(id: string | undefined) {
         queryFn: async () => {
             if (!id) return [];
 
-            const { data, error } = await supabase
-                .from('ledger_transactions')
+            const client: any = supabase;
+            const { data, error } = await client
+                .from('ledger_entries')
                 .select(`
-          *,
-          voucher:vouchers(id, voucher_type, voucher_number, party_name)
-        `)
+                    id,
+                    distributor_id:tenant_id,
+                    voucher_id:transaction_id,
+                    ledger_id,
+                    transaction_date:entry_date,
+                    debit_amount:debit,
+                    credit_amount:credit,
+                    narration:description,
+                    created_at,
+                    voucher:vouchers!transaction_id(id, voucher_type, voucher_number, party_name)
+                `)
                 .eq('ledger_id', id)
-                .order('transaction_date', { ascending: false })
+                .order('entry_date', { ascending: false })
                 .order('created_at', { ascending: false });
 
             if (error) {

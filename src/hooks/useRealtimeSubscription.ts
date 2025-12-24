@@ -25,6 +25,8 @@ type TableName =
     | 'voucher_items'
     | 'ledger_transactions'
     | 'gst_summary'
+    // Permissions
+    | 'user_permissions'
     | ''; // Empty string for disabled subscriptions
 
 interface UseRealtimeOptions {
@@ -48,13 +50,16 @@ export function useRealtimeSubscription(
 ) {
     const queryClient = useQueryClient();
 
+    // Use a stable key for the effect dependency
+    const stableQueryKey = JSON.stringify(queryKey);
+
     useEffect(() => {
         // Don't subscribe if disabled or empty table name
         if (!enabled || !table) {
             return;
         }
 
-        const channelName = `${table}_changes_${queryKey.join('_')}`;
+        const channelName = `${table}_changes_${stableQueryKey}`;
 
         const channel = supabase
             .channel(channelName)
@@ -90,7 +95,8 @@ export function useRealtimeSubscription(
             console.log(`[Realtime] Unsubscribing from ${table}`);
             supabase.removeChannel(channel);
         };
-    }, [table, queryKey.join(','), options?.filterColumn, options?.filterValue, queryClient, enabled]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [table, stableQueryKey, options?.filterColumn, options?.filterValue, queryClient, enabled]);
 }
 
 /**

@@ -43,6 +43,13 @@ interface Invitation {
   tenant_id: string;
 }
 
+interface SelfSignupUser {
+  id: string;
+  email: string;
+  created_at: string;
+  email_confirmed_at: string | null;
+}
+
 const ROLE_CONFIG: Record<AppRole, { label: string; icon: React.ElementType; color: string }> = {
   superadmin: { label: 'Super Admin', icon: Database, color: 'text-purple-600' },
   admin: { label: 'Admin', icon: ShieldCheck, color: 'text-red-500' },
@@ -61,6 +68,8 @@ export default function UserManagement() {
   const [inviteEmail, setInviteEmail] = useState('');
   const [invitePassword, setInvitePassword] = useState('');
   const [inviting, setInviting] = useState(false);
+  const [selfSignupUsers, setSelfSignupUsers] = useState<SelfSignupUser[]>([]);
+  const [deletingUser, setDeletingUser] = useState<string | null>(null);
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -134,7 +143,10 @@ export default function UserManagement() {
 
   useEffect(() => {
     fetchUsers();
-  }, []);
+    if (isSuperadmin) {
+      fetchSelfSignupUsers();
+    }
+  }, [isSuperadmin]);
 
   const handleDownloadData = async () => {
     if (!isSuperadmin) return;
@@ -168,6 +180,52 @@ export default function UserManagement() {
     } catch (error) {
       console.error('Export failed:', error);
       toast.error('Failed to export data', { id: toastId });
+    }
+  };
+
+  const fetchSelfSignupUsers = async () => {
+    if (!isSuperadmin) return;
+
+    try {
+      // Use type assertion since this RPC is new and not yet in generated types
+      const { data, error } = await (supabase.rpc as any)('get_self_signup_users');
+
+      if (error) {
+        console.error('Error fetching self-signup users:', error);
+        return;
+      }
+
+      setSelfSignupUsers((data as SelfSignupUser[]) || []);
+    } catch (error) {
+      console.error('Error fetching self-signup users:', error);
+    }
+  };
+
+  const permanentlyDeleteUser = async (userId: string, email: string) => {
+    if (!isSuperadmin) return;
+
+    if (!confirm(`⚠️ PERMANENT DELETE\n\nAre you sure you want to permanently delete "${email}"?\n\nThis user will:\n• Be removed from the authentication system\n• NOT be able to log in again with the same credentials\n• This action CANNOT be undone!`)) {
+      return;
+    }
+
+    setDeletingUser(userId);
+    try {
+      const { data, error } = await supabase.functions.invoke('delete-user', {
+        body: { userId },
+      });
+
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+
+      toast.success(`User ${email} permanently deleted. They cannot log in again.`);
+      fetchSelfSignupUsers();
+      fetchUsers();
+    } catch (error: unknown) {
+      console.error('Error permanently deleting user:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to delete user';
+      toast.error(errorMessage);
+    } finally {
+      setDeletingUser(null);
     }
   };
 
@@ -259,11 +317,11 @@ export default function UserManagement() {
         if (error) throw error;
       } else {
         // Insert new role with tenant_id
-        const insertData: any = { 
-          user_id: userId, 
+        const insertData: any = {
+          user_id: userId,
           role: newRole,
         };
-        
+
         // Set tenant_id based on role
         if (newRole === 'superadmin' || newRole === 'admin') {
           insertData.tenant_id = userId; // Their own tenant
@@ -306,7 +364,7 @@ export default function UserManagement() {
 
   const deleteUser = async (userId: string, email: string) => {
     if (!isSuperadmin) return;
-    
+
     if (!confirm(`Are you sure you want to delete user "${email}"? This action cannot be undone.`)) {
       return;
     }
@@ -314,7 +372,7 @@ export default function UserManagement() {
     try {
       // First delete any user_roles
       await supabase.from('user_roles').delete().eq('user_id', userId);
-      
+
       // Delete profile
       const { error: profileError } = await supabase
         .from('profiles')
@@ -337,7 +395,7 @@ export default function UserManagement() {
       // Admin view: only show users in their tenant
       return allUsers.filter(u => u.tenant_id === tenantId);
     }
-    
+
     // Superadmin view: filter by selected admin
     if (selectedAdminId === 'all') {
       return allUsers;
@@ -359,8 +417,8 @@ export default function UserManagement() {
   const filteredInvitations = isSuperadmin && selectedAdminId !== 'all'
     ? invitations.filter(i => i.tenant_id === selectedAdminId)
     : !isSuperadmin && tenantId
-    ? invitations.filter(i => i.tenant_id === tenantId)
-    : invitations;
+      ? invitations.filter(i => i.tenant_id === tenantId)
+      : invitations;
 
   return (
     <PageContainer
@@ -382,7 +440,11 @@ export default function UserManagement() {
           <Button
             variant="default"
             size="sm"
-            onClick={() => setInviteDialogOpen(true)}
+            onClick={() => {
+              setInviteEmail('');
+              setInvitePassword('');
+              setInviteDialogOpen(true);
+            }}
             className="tracking-[-0.06em]"
           >
             <UserPlus className="w-4 h-4 mr-2" />
@@ -498,6 +560,76 @@ export default function UserManagement() {
         </div>
       </div>
 
+      {/* Self-Signup Users Section - Only visible to Superadmin */}
+      {isSuperadmin && selfSignupUsers.length > 0 && (
+        <div className="mt-8">
+          <h2 className="text-lg font-semibold text-foreground tracking-[-0.06em] mb-4 flex items-center gap-2">
+            <Shield className="w-5 h-5 text-amber-500" />
+            Self-Signup Users ({selfSignupUsers.length})
+          </h2>
+          <p className="text-sm text-muted-foreground mb-4">
+            Users who signed up without invitation. Assign a role or permanently delete.
+          </p>
+          <div className="bg-card border border-amber-500/30 rounded-xl overflow-hidden">
+            <div className="divide-y divide-border">
+              {selfSignupUsers.map((user) => (
+                <div key={user.id} className="flex items-center justify-between p-4 hover:bg-muted/30 transition-colors">
+                  <div className="flex items-center gap-4 min-w-0 flex-1">
+                    <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center text-amber-600">
+                      <UserX className="w-5 h-5" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-medium text-foreground truncate tracking-[-0.06em]">
+                        {user.email}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Signed up: {new Date(user.created_at).toLocaleDateString()}
+                        {user.email_confirmed_at && ' • Email confirmed'}
+                        {!user.email_confirmed_at && ' • Email not confirmed'}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {/* Assign Role */}
+                    <Select
+                      onValueChange={(value) => handleRoleChange(user.id, value as AppRole)}
+                      disabled={updating === user.id}
+                    >
+                      <SelectTrigger className="w-36 h-9 text-sm tracking-[-0.06em]">
+                        <SelectValue placeholder="Assign role..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="superadmin">Super Admin</SelectItem>
+                        <SelectItem value="admin">Admin</SelectItem>
+                        <SelectItem value="salesperson">Salesperson</SelectItem>
+                      </SelectContent>
+                    </Select>
+
+                    {/* Permanent Delete */}
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => permanentlyDeleteUser(user.id, user.email)}
+                      disabled={deletingUser === user.id}
+                      className="h-9"
+                    >
+                      {deletingUser === user.id ? (
+                        <RefreshCw className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <>
+                          <Trash2 className="w-4 h-4 mr-1" />
+                          Delete
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Unassigned Users Section - Only visible to Superadmin */}
       {isSuperadmin && unassignedUsers.length > 0 && (
         <div className="mt-8">
@@ -534,20 +666,24 @@ export default function UserManagement() {
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email Address</Label>
+              <Label htmlFor="salesperson-email">Email Address</Label>
               <Input
-                id="email"
+                id="salesperson-email"
+                name="salesperson-new-email"
                 type="email"
+                autoComplete="off"
                 placeholder="salesperson@example.com"
                 value={inviteEmail}
                 onChange={(e) => setInviteEmail(e.target.value)}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="salesperson-password">Password</Label>
               <Input
-                id="password"
+                id="salesperson-password"
+                name="salesperson-new-password"
                 type="password"
+                autoComplete="new-password"
                 placeholder="Enter password (min 6 characters)"
                 value={invitePassword}
                 onChange={(e) => setInvitePassword(e.target.value)}
@@ -561,8 +697,8 @@ export default function UserManagement() {
             <Button variant="outline" onClick={() => setInviteDialogOpen(false)}>
               Cancel
             </Button>
-            <Button 
-              onClick={handleInviteSalesperson} 
+            <Button
+              onClick={handleInviteSalesperson}
               disabled={!inviteEmail || !invitePassword || invitePassword.length < 6 || inviting}
             >
               {inviting ? <RefreshCw className="w-4 h-4 mr-2 animate-spin" /> : <UserPlus className="w-4 h-4 mr-2" />}

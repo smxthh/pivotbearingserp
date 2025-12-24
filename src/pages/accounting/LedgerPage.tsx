@@ -160,19 +160,22 @@ export default function LedgerPage() {
         {
             key: 'closing_balance',
             header: 'Cl. Balance',
-            render: (ledger) => (
-                <span className={
-                    ledger.closing_balance === 0
-                        ? 'text-muted-foreground'
-                        : ledger.closing_balance > 0
-                            ? 'text-success font-medium'
-                            : 'text-destructive font-medium'
-                }>
-                    {ledger.closing_balance === 0
-                        ? '0'
-                        : `${formatCurrency(ledger.closing_balance)} ${ledger.closing_balance >= 0 ? 'Dr' : 'Cr'}`}
-                </span>
-            ),
+            render: (ledger) => {
+                const balance = ledger.current_balance ?? ledger.closing_balance ?? 0;
+                return (
+                    <span className={
+                        balance === 0
+                            ? 'text-muted-foreground'
+                            : balance > 0
+                                ? 'text-success font-medium'
+                                : 'text-destructive font-medium'
+                    }>
+                        {balance === 0
+                            ? '0'
+                            : `${formatCurrency(balance)} ${balance >= 0 ? 'Dr' : 'Cr'}`}
+                    </span>
+                );
+            },
             className: 'text-right',
         },
     ];
@@ -233,7 +236,7 @@ export default function LedgerPage() {
                 >
                     Update Op. Bal.
                 </Button>
-                <Button 
+                <Button
                     size="sm"
                     onClick={() => { setSelectedLedger(null); setIsLedgerDialogOpen(true); }}
                     className="rounded-lg"

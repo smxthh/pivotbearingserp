@@ -4,6 +4,7 @@ import {
     DialogContent,
     DialogHeader,
     DialogTitle,
+    DialogDescription,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -17,8 +18,8 @@ import {
 } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
-import { useVoucher } from '@/hooks/useVouchers';
-import { Download, Printer, FileText } from 'lucide-react';
+import { useVoucher, useVouchers } from '@/hooks/useVouchers';
+import { Download, Printer, FileText, BookOpen } from 'lucide-react';
 
 interface VoucherViewDialogProps {
     open: boolean;
@@ -37,14 +38,19 @@ export function VoucherViewDialog({ open, onOpenChange, voucherId }: VoucherView
             maximumFractionDigits: 2,
         }).format(value);
 
-    // Format date
-    const formatDate = (dateString: string) => {
+    // Format date time
+    const formatDateTime = (dateString: string) => {
+        if (!dateString) return '-';
         const date = new Date(dateString);
         return date.toLocaleDateString('en-IN', {
             day: '2-digit',
-            month: 'short',
+            month: '2-digit',
             year: 'numeric',
-        });
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false,
+            timeZone: 'Asia/Kolkata'
+        }).replace(',', '');
     };
 
     // Get voucher type label
@@ -91,6 +97,7 @@ export function VoucherViewDialog({ open, onOpenChange, voucherId }: VoucherView
                 <DialogContent className="sm:max-w-[800px]">
                     <DialogHeader>
                         <Skeleton className="h-6 w-48" />
+                        <DialogDescription className="sr-only">Loading voucher details</DialogDescription>
                     </DialogHeader>
                     <div className="space-y-4">
                         <Skeleton className="h-20" />
@@ -108,6 +115,7 @@ export function VoucherViewDialog({ open, onOpenChange, voucherId }: VoucherView
                 <DialogContent className="sm:max-w-[800px]">
                     <DialogHeader>
                         <DialogTitle>Voucher Not Found</DialogTitle>
+                        <DialogDescription className="sr-only">The requested voucher could not be found</DialogDescription>
                     </DialogHeader>
                     <div className="text-center py-8 text-muted-foreground">
                         <FileText className="h-12 w-12 mx-auto mb-2 opacity-50" />
@@ -118,24 +126,36 @@ export function VoucherViewDialog({ open, onOpenChange, voucherId }: VoucherView
         );
     }
 
+    // Calculate subtotal from items if taxable_amount is 0
+    const calculatedSubtotal = voucher.taxable_amount ||
+        voucher.items?.reduce((sum, item) => sum + (item.quantity * item.rate * (1 - (item.discount_percent || 0) / 100)), 0) || 0;
+
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-[900px] max-h-[90vh] overflow-auto">
-                <DialogHeader>
+            <DialogContent className="sm:max-w-[900px] p-4">
+                <DialogHeader className="pb-2">
                     <div className="flex items-center justify-between">
                         <div>
-                            <DialogTitle className="text-xl">
+                            <DialogTitle className="text-lg font-semibold">
                                 {getVoucherTypeLabel(voucher.voucher_type)}
                             </DialogTitle>
+                            <DialogDescription className="sr-only">
+                                View details for {voucher.voucher_number}
+                            </DialogDescription>
                             <div className="flex items-center gap-3 mt-1">
                                 <span className="font-mono text-sm text-muted-foreground">
                                     {voucher.voucher_number}
                                 </span>
                                 {getStatusBadge(voucher.status)}
+                                {voucher.status === 'cancelled' && voucher.cancelled_at && (
+                                    <span className="text-xs text-destructive font-medium">
+                                        Cancelled: {formatDateTime(voucher.cancelled_at)}
+                                    </span>
+                                )}
                             </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                            <Button variant="outline" size="sm" onClick={handlePrint}>
+                        <div className="flex justify-end gap-2">
+                            <Button variant="outline" onClick={handlePrint}>
                                 <Printer className="h-4 w-4 mr-2" />
                                 Print
                             </Button>
@@ -143,73 +163,53 @@ export function VoucherViewDialog({ open, onOpenChange, voucherId }: VoucherView
                     </div>
                 </DialogHeader>
 
-                {/* Voucher Details */}
-                <div className="grid grid-cols-3 gap-6 py-4">
-                    <div className="space-y-2">
+                {/* Voucher Details - Compact inline */}
+                <div className="grid grid-cols-2 gap-x-6 gap-y-1 py-2 text-sm border-b">
+                    <div className="flex justify-between">
+                        <span className="text-muted-foreground">Date:</span>
+                        <span className="font-medium">{formatDateTime(voucher.voucher_date)}</span>
+                    </div>
+                    {voucher.party_name && (
                         <div className="flex justify-between">
-                            <span className="text-muted-foreground">Date:</span>
-                            <span className="font-medium">{formatDate(voucher.voucher_date)}</span>
+                            <span className="text-muted-foreground">Party:</span>
+                            <span className="font-medium">{voucher.party_name}</span>
                         </div>
-                        {voucher.party_name && (
-                            <div className="flex justify-between">
-                                <span className="text-muted-foreground">Party:</span>
-                                <span className="font-medium">{voucher.party_name}</span>
-                            </div>
-                        )}
-                        {voucher.party?.gst_number && (
-                            <div className="flex justify-between">
-                                <span className="text-muted-foreground">GSTIN:</span>
-                                <span className="font-mono text-sm">{voucher.party.gst_number}</span>
-                            </div>
-                        )}
-                        {(voucher.customer_po_number || voucher.po_number) && (
-                            <div className="flex justify-between">
-                                <span className="text-muted-foreground">PO No:</span>
-                                <span>{voucher.customer_po_number || voucher.po_number}</span>
-                            </div>
-                        )}
-                    </div>
-                    <div className="space-y-2">
-                        {voucher.customer_po_date && (
-                            <div className="flex justify-between">
-                                <span className="text-muted-foreground">PO Date:</span>
-                                <span>{formatDate(voucher.customer_po_date)}</span>
-                            </div>
-                        )}
-                        {voucher.reference_number && (
-                            <div className="flex justify-between">
-                                <span className="text-muted-foreground">Reference:</span>
-                                <span>{voucher.reference_number}</span>
-                            </div>
-                        )}
-                        {voucher.transport_name && (
-                            <div className="flex justify-between">
-                                <span className="text-muted-foreground">Transport:</span>
-                                <span>{voucher.transport_name}</span>
-                            </div>
-                        )}
-                        {voucher.lr_number && (
-                            <div className="flex justify-between">
-                                <span className="text-muted-foreground">LR No:</span>
-                                <span>{voucher.lr_number}</span>
-                            </div>
-                        )}
-                    </div>
-                    <div className="space-y-2">
-                        {voucher.ship_to && (
-                            <div className="flex flex-col">
-                                <span className="text-muted-foreground">Ship To:</span>
-                                <span className="text-sm">{voucher.ship_to}</span>
-                            </div>
-                        )}
-                    </div>
+                    )}
+                    {voucher.party?.gst_number && (
+                        <div className="flex justify-between">
+                            <span className="text-muted-foreground">GSTIN:</span>
+                            <span className="font-mono">{voucher.party.gst_number}</span>
+                        </div>
+                    )}
+                    {voucher.reference_number && (
+                        <div className="flex justify-between">
+                            <span className="text-muted-foreground">Reference:</span>
+                            <span>{voucher.reference_number}</span>
+                        </div>
+                    )}
+                    {(voucher.customer_po_number || voucher.po_number) && (
+                        <div className="flex justify-between">
+                            <span className="text-muted-foreground">PO No:</span>
+                            <span>{voucher.customer_po_number || voucher.po_number}</span>
+                        </div>
+                    )}
+                    {voucher.transport_name && (
+                        <div className="flex justify-between">
+                            <span className="text-muted-foreground">Transport:</span>
+                            <span>{voucher.transport_name}</span>
+                        </div>
+                    )}
+                    {voucher.lr_number && (
+                        <div className="flex justify-between">
+                            <span className="text-muted-foreground">LR No:</span>
+                            <span>{voucher.lr_number}</span>
+                        </div>
+                    )}
                 </div>
-
-                <Separator />
 
                 {/* Items Table */}
                 {voucher.items && voucher.items.length > 0 && (
-                    <div className="border rounded-lg overflow-hidden">
+                    <div className="border rounded-lg overflow-hidden my-2">
                         <Table>
                             <TableHeader>
                                 <TableRow className="bg-muted/50">
@@ -228,9 +228,6 @@ export function VoucherViewDialog({ open, onOpenChange, voucherId }: VoucherView
                                             <TableHead className="w-24 text-right">Tax</TableHead>
                                             <TableHead className="w-28 text-right">Total</TableHead>
                                         </>
-                                    )}
-                                    {voucher.voucher_type === 'delivery_challan' && voucher.items.some(i => (i.discount_percent || 0) > 0) && (
-                                        <TableHead className="w-16 text-right">Disc%</TableHead>
                                     )}
                                 </TableRow>
                             </TableHeader>
@@ -260,9 +257,6 @@ export function VoucherViewDialog({ open, onOpenChange, voucherId }: VoucherView
                                                 </TableCell>
                                             </>
                                         )}
-                                        {voucher.voucher_type === 'delivery_challan' && voucher.items.some(i => (i.discount_percent || 0) > 0) && (
-                                            <TableCell className="text-right">{item.discount_percent || 0}%</TableCell>
-                                        )}
                                     </TableRow>
                                 ))}
                             </TableBody>
@@ -270,52 +264,50 @@ export function VoucherViewDialog({ open, onOpenChange, voucherId }: VoucherView
                     </div>
                 )}
 
-                <Separator />
-
-                {/* Totals - hide for delivery challan */}
+                {/* Totals Section */}
                 {voucher.voucher_type !== 'delivery_challan' && (
-                    <div className="grid grid-cols-2 gap-6">
+                    <div className="grid grid-cols-2 gap-4 pt-2">
                         <div>
                             {voucher.narration && (
-                                <div>
-                                    <span className="text-sm text-muted-foreground">Narration:</span>
-                                    <p className="mt-1">{voucher.narration}</p>
+                                <div className="bg-muted/30 rounded-lg p-3">
+                                    <span className="text-xs font-medium">Narration:</span>
+                                    <p className="text-xs text-muted-foreground mt-0.5">{voucher.narration}</p>
                                 </div>
                             )}
                         </div>
-                        <div className="bg-muted/30 rounded-lg p-4 space-y-2">
-                            <div className="flex justify-between">
+                        <div className="bg-muted/30 rounded-lg p-3 space-y-1">
+                            <div className="flex justify-between text-xs">
                                 <span className="text-muted-foreground">Subtotal:</span>
-                                <span>{formatCurrency(voucher.taxable_amount)}</span>
+                                <span className="font-medium">{formatCurrency(calculatedSubtotal)}</span>
                             </div>
                             {voucher.cgst_amount > 0 && (
-                                <div className="flex justify-between">
+                                <div className="flex justify-between text-xs">
                                     <span className="text-muted-foreground">CGST:</span>
                                     <span>{formatCurrency(voucher.cgst_amount)}</span>
                                 </div>
                             )}
                             {voucher.sgst_amount > 0 && (
-                                <div className="flex justify-between">
+                                <div className="flex justify-between text-xs">
                                     <span className="text-muted-foreground">SGST:</span>
                                     <span>{formatCurrency(voucher.sgst_amount)}</span>
                                 </div>
                             )}
                             {voucher.igst_amount > 0 && (
-                                <div className="flex justify-between">
+                                <div className="flex justify-between text-xs">
                                     <span className="text-muted-foreground">IGST:</span>
                                     <span>{formatCurrency(voucher.igst_amount)}</span>
                                 </div>
                             )}
                             {voucher.round_off !== 0 && (
-                                <div className="flex justify-between">
+                                <div className="flex justify-between text-xs">
                                     <span className="text-muted-foreground">Round Off:</span>
                                     <span>{formatCurrency(voucher.round_off)}</span>
                                 </div>
                             )}
-                            <Separator />
+                            <Separator className="my-1" />
                             <div className="flex justify-between">
-                                <span className="font-semibold">Grand Total:</span>
-                                <span className="font-bold text-lg">{formatCurrency(voucher.total_amount)}</span>
+                                <span className="font-semibold text-sm">Grand Total:</span>
+                                <span className="font-bold text-base text-primary">{formatCurrency(voucher.total_amount)}</span>
                             </div>
                         </div>
                     </div>
@@ -323,12 +315,14 @@ export function VoucherViewDialog({ open, onOpenChange, voucherId }: VoucherView
 
                 {/* Narration only for delivery challan */}
                 {voucher.voucher_type === 'delivery_challan' && voucher.narration && (
-                    <div>
-                        <span className="text-sm text-muted-foreground">Narration:</span>
-                        <p className="mt-1">{voucher.narration}</p>
+                    <div className="bg-muted/30 rounded-lg p-4 mt-4">
+                        <span className="text-sm font-medium">Narration:</span>
+                        <p className="text-sm text-muted-foreground mt-1">{voucher.narration}</p>
                     </div>
                 )}
             </DialogContent>
         </Dialog>
     );
 }
+
+

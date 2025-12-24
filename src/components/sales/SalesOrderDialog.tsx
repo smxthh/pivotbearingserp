@@ -9,6 +9,7 @@ import {
     DialogContent,
     DialogHeader,
     DialogTitle,
+    DialogDescription,
     DialogFooter,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -336,6 +337,9 @@ export function SalesOrderDialog({ open, onOpenChange, sourceQuotationId }: Sale
                 <DialogContent className="sm:max-w-[1100px] max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
                         <DialogTitle className="text-lg font-semibold">Sales Order</DialogTitle>
+                        <DialogDescription className="sr-only">
+                            Generate a new sales order for a customer including items, delivery details, and terms.
+                        </DialogDescription>
                     </DialogHeader>
 
                     <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">

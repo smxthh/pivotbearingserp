@@ -13,6 +13,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useVouchers, Voucher } from '@/hooks/useVouchers';
 import { PurchaseInvoiceDialog } from '@/components/accounting/PurchaseInvoiceDialog';
 import { VoucherViewDialog } from '@/components/accounting/VoucherViewDialog';
@@ -24,8 +25,8 @@ export default function PurchaseInvoicePage() {
     });
 
     // State
+    const [activeTab, setActiveTab] = useState<'list' | 'cancelled'>('list');
     const [searchQuery, setSearchQuery] = useState('');
-    const [statusFilter, setStatusFilter] = useState<string>('all');
     const [rowsPerPage, setRowsPerPage] = useState(25);
     const [currentPage, setCurrentPage] = useState(1);
 
@@ -43,23 +44,29 @@ export default function PurchaseInvoicePage() {
             maximumFractionDigits: 2,
         }).format(value);
 
-    // Format date
-    const formatDate = (dateString: string) => {
+    // Format date time
+    const formatDateTime = (dateString: string) => {
+        if (!dateString) return '-';
         const date = new Date(dateString);
         return date.toLocaleDateString('en-IN', {
             day: '2-digit',
-            month: 'short',
+            month: '2-digit',
             year: 'numeric',
-        });
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false, // 24-hour format
+            timeZone: 'Asia/Kolkata' // Force Indian Standard Time
+        }).replace(',', '');
     };
 
     // Filter vouchers
-    const filteredVouchers = vouchers.filter((v) => {
+    const activeVouchers = vouchers.filter(v => activeTab === 'list' ? v.status !== 'cancelled' : v.status === 'cancelled');
+
+    const filteredVouchers = activeVouchers.filter((v) => {
         const matchesSearch =
             v.voucher_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
             (v.party_name?.toLowerCase() || '').includes(searchQuery.toLowerCase());
-        const matchesStatus = statusFilter === 'all' || v.status === statusFilter;
-        return matchesSearch && matchesStatus;
+        return matchesSearch;
     });
 
     // Pagination
@@ -90,21 +97,22 @@ export default function PurchaseInvoicePage() {
 
     // Export to Excel
     const handleExport = () => {
-        const headers = ['#', 'Invoice No.', 'Date', 'Supplier', 'Taxable', 'Tax', 'Total', 'Status'];
+        const headers = ['#', 'Invoice No.', 'Date', 'Supplier', 'Taxable', 'Tax', 'Total', 'Status', 'Cancelled At'];
         const rows = filteredVouchers.map((v, index) => [
             index + 1,
             v.voucher_number,
-            formatDate(v.voucher_date),
+            formatDateTime(v.voucher_date),
             v.party_name || '-',
             v.taxable_amount,
             v.total_tax,
             v.total_amount,
             v.status,
+            v.cancelled_at ? formatDateTime(v.cancelled_at) : '-',
         ]);
 
         const csvContent = [
             'Purchase Invoices Report',
-            `Generated: ${new Date().toLocaleDateString()}`,
+            `Generated: ${formatDateTime(new Date().toISOString())}`,
             '',
             headers.join(','),
             ...rows.map((row) => row.join(',')),
@@ -182,9 +190,9 @@ export default function PurchaseInvoicePage() {
             ),
         },
         {
-            key: 'voucher_date',
-            header: 'Date',
-            render: (v) => formatDate(v.voucher_date),
+            key: 'created_at',
+            header: 'Created Date & Time',
+            render: (v) => formatDateTime(v.created_at),
         },
         {
             key: 'party_name',
@@ -297,17 +305,12 @@ export default function PurchaseInvoicePage() {
                         />
                     </div>
 
-                    <Select value={statusFilter} onValueChange={setStatusFilter}>
-                        <SelectTrigger className="w-[150px]">
-                            <SelectValue placeholder="Status" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="all">All Status</SelectItem>
-                            <SelectItem value="confirmed">Confirmed</SelectItem>
-                            <SelectItem value="draft">Draft</SelectItem>
-                            <SelectItem value="cancelled">Cancelled</SelectItem>
-                        </SelectContent>
-                    </Select>
+                    <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)}>
+                        <TabsList>
+                            <TabsTrigger value="list" className="px-4">Invoice List</TabsTrigger>
+                            <TabsTrigger value="cancelled" className="px-4">Cancelled Inv.</TabsTrigger>
+                        </TabsList>
+                    </Tabs>
 
                     <Button onClick={() => setIsCreateDialogOpen(true)}>
                         <Plus className="h-4 w-4 mr-2" />

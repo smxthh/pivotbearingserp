@@ -47,9 +47,7 @@ export function TableToolbar({
       await onRefresh();
     } finally {
       // Add a minimum animation duration for smooth UX
-      setTimeout(() => {
-        setInternalIsRefreshing(false);
-      }, 600);
+      setInternalIsRefreshing(false);
     }
   }, [onRefresh]);
 
@@ -74,10 +72,10 @@ export function TableToolbar({
       )}
 
       {onExport && (
-        <Button 
-          variant="outline" 
-          size="sm" 
-          onClick={onExport} 
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={onExport}
           className="rounded-lg"
         >
           <FileDown className="h-4 w-4 mr-2" />
@@ -92,11 +90,11 @@ export function TableToolbar({
         disabled={isRefreshing}
         className="rounded-lg"
       >
-        <RefreshCw 
+        <RefreshCw
           className={cn(
             'h-4 w-4 mr-2 transition-transform duration-500',
             isRefreshing && 'animate-[spin_0.8s_linear_infinite]'
-          )} 
+          )}
         />
         Refresh
       </Button>

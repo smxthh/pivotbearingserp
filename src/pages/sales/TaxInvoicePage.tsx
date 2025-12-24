@@ -30,7 +30,20 @@ export default function TaxInvoicePage() {
 
     const formatCurrency = (value: number) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 2 }).format(value);
     const formatDate = (dateString: string) => new Date(dateString).toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' });
-    const formatDateTime = (dateString: string) => new Date(dateString).toLocaleString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+    // Format date time
+    const formatDateTime = (dateString: string) => {
+        if (!dateString) return '-';
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-IN', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false,
+            timeZone: 'Asia/Kolkata'
+        }).replace(',', '');
+    };
 
     // Filter by tab
     const activeVouchers = vouchers.filter(v => activeTab === 'list' ? v.status === 'confirmed' : v.status === 'cancelled');
@@ -68,7 +81,6 @@ export default function TaxInvoicePage() {
         },
         { key: 'ship_to', header: 'Ship To', render: (v: any) => v.ship_to || v.party_name?.split(' ')[0] || '-' },
         { key: 'voucher_number', header: 'Inv No.', render: (v) => <span className="font-mono font-medium text-primary">{v.voucher_number}</span> },
-        { key: 'voucher_date', header: 'Inv Date', render: (v) => formatDate(v.voucher_date) },
         { key: 'party_name', header: 'Customer Name', render: (v) => v.party_name || '-' },
         { key: 'taxable_amount', header: 'Taxable Amount', render: (v) => formatCurrency(v.taxable_amount || v.subtotal || 0), className: 'text-right' },
         { key: 'total_tax', header: 'GST Amount', render: (v) => formatCurrency(v.total_tax || 0), className: 'text-right' },
@@ -77,6 +89,37 @@ export default function TaxInvoicePage() {
         { key: 'ewb_no', header: 'EWB No.', render: (v: any) => v.ewb_no || '-' },
         { key: 'created_at', header: 'Created By & Date', render: (v) => <div className="text-xs"><div className="text-primary font-medium">admin</div><div className="text-muted-foreground">{formatDateTime(v.created_at)}</div></div> },
     ];
+
+    const handleExport = () => {
+        const headers = ['#', 'Invoice No.', 'Date', 'Customer', 'Taxable', 'GST', 'Total', 'Status', 'Cancelled At'];
+        const rows = filteredVouchers.map((v, index) => [
+            index + 1,
+            v.voucher_number,
+            formatDateTime(v.voucher_date),
+            v.party_name || '-',
+            v.taxable_amount,
+            v.total_tax,
+            v.total_amount,
+            v.status,
+            v.cancelled_at ? formatDateTime(v.cancelled_at) : '-'
+        ]);
+
+        const csvContent = [
+            'Sales Invoices Report',
+            `Generated: ${formatDateTime(new Date().toISOString())}`,
+            '',
+            headers.join(','),
+            ...rows.map((row) => row.join(',')),
+        ].join('\n');
+
+        const blob = new Blob([csvContent], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `sales_invoices_${new Date().toISOString().split('T')[0]}.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
+    };
 
     if (isLoading) return <PageContainer title="Sales Invoice"><div className="space-y-4"><Skeleton className="h-10 w-64" /><div className="bg-card rounded-xl border">{[...Array(8)].map((_, i) => <Skeleton key={i} className="h-12 m-2" />)}</div></div></PageContainer>;
 
@@ -121,30 +164,43 @@ export default function TaxInvoicePage() {
                     </div>
                 </div>
 
-                <TabsContent value="list" className="mt-0">
-                    <DataTable columns={columns} data={paginatedVouchers} keyExtractor={(v) => v.id} emptyMessage="No data available in table" onRowClick={handleView} />
-                </TabsContent>
-
-                <TabsContent value="cancelled" className="mt-0">
-                    <DataTable columns={columns} data={paginatedVouchers} keyExtractor={(v) => v.id} emptyMessage="No cancelled invoices" onRowClick={handleView} />
-                </TabsContent>
+                <div className="rounded-xl border bg-card text-card-foreground shadow">
+                    <DataTable
+                        columns={columns}
+                        data={paginatedVouchers}
+                        isLoading={isLoading}
+                        keyExtractor={(v) => v.id}
+                        emptyMessage="No invoices found"
+                        onRowClick={handleView}
+                    />
+                </div>
 
                 {/* Pagination */}
-                <div className="flex items-center justify-between mt-4">
-                    <p className="text-sm text-muted-foreground">Showing {((currentPage - 1) * rowsPerPage) + 1} to {Math.min(currentPage * rowsPerPage, filteredVouchers.length)} of {filteredVouchers.length} entries</p>
-                    {totalPages > 1 && (
-                        <div className="flex items-center gap-2">
-                            <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>Previous</Button>
-                            <span className="px-3 py-1 bg-primary text-primary-foreground rounded text-sm">{currentPage}</span>
-                            <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}>Next</Button>
-                        </div>
-                    )}
-                </div>
+                {totalPages > 1 && (
+                    <div className="flex items-center justify-end gap-2 mt-4">
+                        <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>Previous</Button>
+                        <div className="text-sm">Page {currentPage} of {totalPages}</div>
+                        <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}>Next</Button>
+                    </div>
+                )}
             </Tabs>
 
             <TaxInvoiceDialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen} />
-            {selectedVoucher && <VoucherViewDialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen} voucherId={selectedVoucher.id} />}
-            <ConfirmDialog open={isCancelDialogOpen} onOpenChange={setIsCancelDialogOpen} title="Cancel Tax Invoice" description={`Cancel "${selectedVoucher?.voucher_number}"?`} cancelLabel="Go Back" confirmLabel="Yes, Cancel Invoice" onConfirm={confirmCancel} isLoading={isCancelling} variant="destructive" />
+
+            {selectedVoucher && (
+                <>
+                    <VoucherViewDialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen} voucherId={selectedVoucher.id} />
+                    <ConfirmDialog
+                        open={isCancelDialogOpen}
+                        onOpenChange={setIsCancelDialogOpen}
+                        title="Cancel Invoice"
+                        description="Are you sure you want to cancel this invoice? This action cannot be undone."
+                        onConfirm={confirmCancel}
+                        variant="destructive"
+                    />
+                </>
+            )}
         </PageContainer>
     );
 }
+

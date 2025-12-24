@@ -25,7 +25,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Plus, RefreshCw, Download, Settings, Trash2, Search } from 'lucide-react';
+import { Plus, RefreshCw, Download, Settings, Trash2, Search, Edit } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useTerms, Term } from '@/hooks/useTerms';
 import { AddTermsDialog } from '@/components/config/AddTermsDialog';
@@ -45,6 +45,7 @@ export default function TermsPage() {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [recordToDelete, setRecordToDelete] = useState<Term | null>(null);
+    const [termToEdit, setTermToEdit] = useState<Term | null>(null);
 
     // Filters
     const [globalSearch, setGlobalSearch] = useState('');
@@ -68,7 +69,15 @@ export default function TermsPage() {
     const totalPages = Math.ceil(totalCount / pageSize);
 
     // Handlers
-    const handleAddClick = () => setIsDialogOpen(true);
+    const handleAddClick = () => {
+        setTermToEdit(null);
+        setIsDialogOpen(true);
+    };
+
+    const handleEditClick = (record: Term) => {
+        setTermToEdit(record);
+        setIsDialogOpen(true);
+    };
 
     const handleDeleteClick = (record: Term) => {
         setRecordToDelete(record);
@@ -219,6 +228,10 @@ export default function TermsPage() {
                                                     </Button>
                                                 </DropdownMenuTrigger>
                                                 <DropdownMenuContent align="start">
+                                                    <DropdownMenuItem onClick={() => handleEditClick(record)}>
+                                                        <Edit className="h-4 w-4 mr-2" />
+                                                        Edit
+                                                    </DropdownMenuItem>
                                                     <DropdownMenuItem
                                                         onClick={() => handleDeleteClick(record)}
                                                         className="text-destructive"
@@ -270,8 +283,15 @@ export default function TermsPage() {
                 </div>
             </div>
 
-            {/* Add Dialog */}
-            <AddTermsDialog open={isDialogOpen} onOpenChange={setIsDialogOpen} />
+            {/* Add/Edit Dialog */}
+            <AddTermsDialog
+                open={isDialogOpen}
+                onOpenChange={(open) => {
+                    setIsDialogOpen(open);
+                    if (!open) setTermToEdit(null);
+                }}
+                termToEdit={termToEdit}
+            />
 
             {/* Delete Confirmation */}
             <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>

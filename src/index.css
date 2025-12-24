@@ -5,13 +5,7 @@
 @tailwind components;
 @tailwind utilities;
 
-@font-face {
-  font-family: 'TestDomaineDisplay';
-  src: url('/TestDomaineDisplay-Regular-BF66174a224cb3d.otf') format('opentype');
-  font-weight: normal;
-  font-style: normal;
-  font-display: swap;
-}
+
 
 @layer base {
   :root {
@@ -41,7 +35,7 @@
     /* Semantic Colors */
     --success: 152 45% 42%;
     --success-foreground: 0 0% 100%;
-    
+
     --warning: 38 92% 50%;
     --warning-foreground: 0 0% 100%;
 
@@ -135,7 +129,7 @@
 
   body {
     @apply bg-background text-foreground font-sans antialiased;
-    font-family: 'TestDomaineDisplay', 'IBM Plex Sans', system-ui, sans-serif;
+    font-family: 'IBM Plex Sans', system-ui, sans-serif;
   }
 
   /* Numeric clarity */
@@ -145,6 +139,7 @@
 }
 
 @layer components {
+
   /* Card hover effect */
   .card-hover {
     @apply transition-shadow duration-200 hover:shadow-md;
@@ -196,6 +191,7 @@
 }
 
 @layer utilities {
+
   /* Fade animations */
   .animate-fade-in {
     animation: fadeIn 0.3s ease-out;
@@ -206,6 +202,7 @@
       opacity: 0;
       transform: translateY(8px);
     }
+
     to {
       opacity: 1;
       transform: translateY(0);
@@ -241,4 +238,3 @@
     scrollbar-color: rgba(100, 116, 139, 0.2) transparent;
   }
 }
-

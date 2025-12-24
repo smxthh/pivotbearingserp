@@ -7,6 +7,7 @@ import {
     DialogContent,
     DialogHeader,
     DialogTitle,
+    DialogDescription,
     DialogFooter,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -157,6 +158,9 @@ export function LedgerDialog({ open, onOpenChange, ledger, groups }: LedgerDialo
                     <DialogTitle>
                         {isEditing ? 'Edit Ledger' : 'Add Ledger'}
                     </DialogTitle>
+                    <DialogDescription className="sr-only">
+                        {isEditing ? 'Modify existing ledger details' : 'Create a new ledger account'}
+                    </DialogDescription>
                 </DialogHeader>
 
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
