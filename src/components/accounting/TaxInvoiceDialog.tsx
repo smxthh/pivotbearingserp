@@ -32,7 +32,7 @@ import {
 } from '@/components/ui/table';
 import { Plus, Trash2, Edit2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { useVouchers, VoucherItemInsert, LedgerPostingItem } from '@/hooks/useVouchers';
+import { useVouchers, VoucherItemInsert } from '@/hooks/useVouchers';
 import { useLedgers } from '@/hooks/useLedgers';
 import { useParties } from '@/hooks/useParties';
 import { useVoucherPrefixesForType } from '@/hooks/useVoucherPrefixes';
@@ -423,69 +423,13 @@ export function TaxInvoiceDialog({ open, onOpenChange }: TaxInvoiceDialogProps) 
             // Build prefix for voucher_number (database trigger will append the atomic number)
             const voucherNumberPrefix = data.inv_prefix;
 
-            const ledgerPostings: LedgerPostingItem[] = [];
-
-            // Debit: Customer (Sundry Debtor) - Total Amount including GST
-            const customerLedger = ledgers.find(l => l.party_id === data.party_id);
-            if (customerLedger) {
-                ledgerPostings.push({
-                    ledger_id: customerLedger.id,
-                    debit_amount: totals.netAmount,
-                    credit_amount: 0,
-                    narration: `Sale to ${selectedParty?.name || 'Customer'}`,
-                });
-            }
-
-            // Credit: Sales Account - Taxable Amount only
-            const salesLedger = ledgers.find(l => l.name === 'Sales Account' || l.group_name === 'Sales Account');
-            if (salesLedger) {
-                ledgerPostings.push({
-                    ledger_id: salesLedger.id,
-                    debit_amount: 0,
-                    credit_amount: totals.subtotal,
-                    narration: 'Tax Invoice Sale',
-                });
-            }
-
-            // Credit: CGST Output - if local sale
-            if (totals.totalCGST > 0) {
-                const cgstLedger = ledgers.find(l => l.name === 'CGST Output' || l.name === 'Output CGST');
-                if (cgstLedger) {
-                    ledgerPostings.push({
-                        ledger_id: cgstLedger.id,
-                        debit_amount: 0,
-                        credit_amount: totals.totalCGST,
-                        narration: 'CGST on Sales',
-                    });
-                }
-            }
-
-            // Credit: SGST Output - if local sale
-            if (totals.totalSGST > 0) {
-                const sgstLedger = ledgers.find(l => l.name === 'SGST Output' || l.name === 'Output SGST');
-                if (sgstLedger) {
-                    ledgerPostings.push({
-                        ledger_id: sgstLedger.id,
-                        debit_amount: 0,
-                        credit_amount: totals.totalSGST,
-                        narration: 'SGST on Sales',
-                    });
-                }
-            }
-
-            // Credit: IGST Output - if inter-state sale
-            const totalIGST = items.reduce((sum, item) => sum + (item.igst_amount || 0), 0);
-            if (totalIGST > 0) {
-                const igstLedger = ledgers.find(l => l.name === 'IGST Output' || l.name === 'Output IGST');
-                if (igstLedger) {
-                    ledgerPostings.push({
-                        ledger_id: igstLedger.id,
-                        debit_amount: 0,
-                        credit_amount: totalIGST,
-                        narration: 'IGST on Sales',
-                    });
-                }
-            }
+            // NOTE: Ledger postings are now handled by backend database triggers
+            // The trigger 'auto_post_invoice_to_accounting' will automatically create
+            // ledger entries when the voucher is saved with status='confirmed'
+            // This ensures:
+            // 1. No duplicate entries (idempotent)
+            // 2. Audit-safe reversal on cancellation
+            // 3. Proper validation of required ledgers
 
             // Prepare voucher items
             const voucherItems: VoucherItemInsert[] = items.map((item, index) => ({
@@ -502,17 +446,14 @@ export function TaxInvoiceDialog({ open, onOpenChange }: TaxInvoiceDialogProps) 
                 gst_percent: item.gst_percent,
                 cgst_amount: item.cgst_amount,
                 sgst_amount: item.sgst_amount,
+                igst_amount: item.igst_amount || 0,
                 total_amount: item.total_amount,
                 line_order: index + 1,
                 remarks: item.remark,
             }));
 
-            // Construct the voucher number parts
-            // voucherNumberPrefix is already defined above
-
-            // If user provided a specific number (and it's not just the default 1 or empty), we want to use it
-            // However, the backend trigger logic handles "empty" inv_number by auto-generating it
-            // So we only send inv_number if we want to FORCE it
+            // Calculate IGST for header
+            const totalIGST = items.reduce((sum, item) => sum + (item.igst_amount || 0), 0);
 
             const invNumberStr = data.inv_number ? data.inv_number.toString() : '';
             const fullVoucherNumber = invNumberStr ? `${voucherNumberPrefix}${invNumberStr}` : voucherNumberPrefix;
@@ -520,20 +461,22 @@ export function TaxInvoiceDialog({ open, onOpenChange }: TaxInvoiceDialogProps) 
             await createVoucherAtomic.mutateAsync({
                 voucher: {
                     voucher_type: 'tax_invoice',
-                    voucher_number: fullVoucherNumber, // If inv_number is present, this is fully formed. If not, trigger appends.
-                    inv_number: invNumberStr, // Pass explicit number to backend
+                    voucher_number: fullVoucherNumber,
+                    inv_number: invNumberStr,
                     voucher_date: data.inv_date,
                     due_date: data.due_date || null,
                     party_id: data.party_id,
                     party_name: selectedParty?.name || '',
                     narration: data.notes,
                     subtotal: totals.subtotal,
+                    taxable_amount: totals.subtotal, // Ensure taxable_amount is set for backend
                     cgst_amount: totals.totalCGST,
                     sgst_amount: totals.totalSGST,
-                    total_tax: totals.totalCGST + totals.totalSGST,
+                    igst_amount: totalIGST,
+                    total_tax: totals.totalCGST + totals.totalSGST + totalIGST,
                     round_off: totals.roundOff,
                     total_amount: totals.netAmount,
-                    status: 'confirmed',
+                    status: 'confirmed', // Backend trigger will auto-post to ledger
                     memo_type: data.memo_type,
                     inv_prefix: data.inv_prefix,
                     gst_type: data.gst_type,
@@ -543,7 +486,7 @@ export function TaxInvoiceDialog({ open, onOpenChange }: TaxInvoiceDialogProps) 
                     parent_voucher_id: linkedChallan || null,
                 } as any,
                 items: voucherItems,
-                ledgerPostings,
+                // No ledgerPostings - backend trigger handles accounting automatically
             });
 
             // NOTE: incrementNumber removed - database trigger handles sequence atomically

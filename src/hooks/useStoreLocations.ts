@@ -8,15 +8,18 @@ import { Tables, TablesInsert, TablesUpdate } from '@/integrations/supabase/type
 export interface StoreLocation {
     id: string;
     distributor_id: string;
+    tenant_id?: string;
     store_name: string;
     location: string;
     store_level: number;
-    is_active: boolean;
+    is_active?: boolean;
     created_at: string;
     updated_at: string;
     is_final_location: boolean;
     parent_store_id?: string | null;
     remark?: string | null;
+    created_by?: string | null;
+    updated_by?: string | null;
 }
 
 export type CreateStoreLocation = Omit<StoreLocation, 'id' | 'created_at' | 'updated_at' | 'is_active'> & { is_active?: boolean };

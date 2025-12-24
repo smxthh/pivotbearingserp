@@ -80,7 +80,7 @@ export function LedgerDialog({ open, onOpenChange, ledger, groups }: LedgerDialo
                     name: ledger.name,
                     group_name: ledger.group_name,
                     opening_balance: ledger.opening_balance,
-                    opening_balance_type: ledger.opening_balance_type,
+                    opening_balance_type: (ledger.opening_balance_type as 'Dr' | 'Cr') || 'Dr',
                     tcs_applicable: (ledger as any).tcs_applicable || false,
                     tds_applicable: (ledger as any).tds_applicable || false,
                     description: ledger.description || '',

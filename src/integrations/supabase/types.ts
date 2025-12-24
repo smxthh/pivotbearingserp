@@ -3927,7 +3927,7 @@ export type Database = {
         Returns: undefined
       }
       post_sales_invoice_to_accounting: {
-        Args: { p_invoice_id: string }
+        Args: { p_voucher_id: string }
         Returns: undefined
       }
       preview_next_document_number: {

@@ -596,7 +596,7 @@ export function GSTIncomeDialog({ open, onOpenChange }: GSTIncomeDialogProps) {
                                                             {Object.entries(groupedLedgers).map(([group, leds]) => (
                                                                 <div key={group}>
                                                                     <div className="px-2 py-1 text-xs font-semibold text-muted-foreground bg-muted">{group}</div>
-                                                                    {leds.map(l => (
+                                                                    {(leds as Ledger[]).map(l => (
                                                                         <SelectItem key={l.id} value={l.id} className="text-xs">{l.name}</SelectItem>
                                                                     ))}
                                                                 </div>

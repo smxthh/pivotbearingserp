@@ -262,7 +262,7 @@ export function HavalaDialog({ open, onOpenChange }: HavalaDialogProps) {
                                         {Object.entries(groupedLedgers).map(([g, leds]) => (
                                             <div key={g}>
                                                 <div className="px-2 py-1 text-xs font-semibold text-muted-foreground bg-muted">{g}</div>
-                                                {leds.map(l => (
+                                                {(leds as Ledger[]).map(l => (
                                                     <SelectItem key={l.id} value={l.id} className="text-xs">
                                                         {l.name}
                                                     </SelectItem>
@@ -349,7 +349,7 @@ export function HavalaDialog({ open, onOpenChange }: HavalaDialogProps) {
                                                         {Object.entries(groupedLedgers).map(([g, leds]) => (
                                                             <div key={g}>
                                                                 <div className="px-2 py-1 text-xs font-semibold text-muted-foreground bg-muted">{g}</div>
-                                                                {leds.map(l => (
+                                                                {(leds as Ledger[]).map(l => (
                                                                     <SelectItem key={l.id} value={l.id} className="text-xs">
                                                                         {l.name}
                                                                     </SelectItem>

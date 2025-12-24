@@ -110,16 +110,15 @@ export function useParties(options: UsePartiesOptions = { realtime: true }) {
             const { error: ledgerError } = await supabase
                 .from('ledgers')
                 .insert({
-                    distributor_id: party.distributor_id,
+                    tenant_id: party.distributor_id, // Use tenant_id instead of distributor_id
                     name: partyData.name,
-                    group_name: groupName,
-                    party_id: partyData.id,
+                    group_id: null, // group_id is the actual column, not group_name
                     opening_balance: party.opening_balance || 0,
                     opening_balance_type: openingBalanceType,
+                    current_balance: party.opening_balance || 0,
                     closing_balance: party.opening_balance || 0,
                     is_system: false,
-                    is_active: true,
-                });
+                } as any);
 
             if (ledgerError) {
                 console.error('Error creating ledger for party:', ledgerError);
