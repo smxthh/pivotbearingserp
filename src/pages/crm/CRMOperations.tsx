@@ -195,7 +195,7 @@ export default function CRMOperations() {
         )}>
             {/* Header */}
             <header className={cn(
-                "h-16 px-4 md:px-6 flex items-center justify-between top-0 z-20 backdrop-blur-md",
+                "h-16 px-4 md:px-6 flex items-center justify-between top-0 z-20 backdrop-blur-md animate-fade-in",
                 isDarkMode ? "bg-[#0F172A]/80" : "bg-[#F3F4F6]/80"
             )}>
                 <div>
@@ -248,7 +248,14 @@ export default function CRMOperations() {
                 {/* First Row - Main Cards (Above the fold) */}
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 mb-4">
                     {/* Monthly Target Achievement */}
-                    <div className={cn("lg:col-span-4 p-6 rounded-3xl shadow-sm transition-all hover:shadow-md border", isDarkMode ? "bg-[#1E293B] border-gray-800" : "bg-white border-white")}>
+                    <div 
+                        className={cn(
+                            "lg:col-span-4 p-6 rounded-3xl shadow-sm transition-all hover:shadow-md border",
+                            "animate-fade-in",
+                            isDarkMode ? "bg-[#1E293B] border-gray-800" : "bg-white border-white"
+                        )}
+                        style={{ animationDelay: '0ms' }}
+                    >
                         <div className="flex justify-between items-start mb-6">
                             <h3 className={cn("text-lg font-normal tracking-wide", isDarkMode ? "text-white" : "text-gray-900")}>
                                 Monthly Target Achievement
@@ -301,7 +308,14 @@ export default function CRMOperations() {
                     </div>
 
                     {/* CRM Activity */}
-                    <div className={cn("lg:col-span-4 p-6 rounded-3xl shadow-sm transition-all hover:shadow-md border", isDarkMode ? "bg-[#1E293B] border-gray-800" : "bg-white border-white")}>
+                    <div 
+                        className={cn(
+                            "lg:col-span-4 p-6 rounded-3xl shadow-sm transition-all hover:shadow-md border",
+                            "animate-fade-in",
+                            isDarkMode ? "bg-[#1E293B] border-gray-800" : "bg-white border-white"
+                        )}
+                        style={{ animationDelay: '100ms', animationFillMode: 'backwards' }}
+                    >
                         <div className="flex justify-between items-start mb-4">
                             <h3 className={cn("text-lg font-normal tracking-wide", isDarkMode ? "text-white" : "text-gray-900")}>CRM Activity</h3>
                             <button className="text-gray-400 hover:text-gray-600"><MoreVertical size={16} /></button>
@@ -343,7 +357,14 @@ export default function CRMOperations() {
                     </div>
 
                     {/* Strategic Priorities */}
-                    <div className={cn("lg:col-span-4 p-6 rounded-3xl shadow-sm transition-all hover:shadow-md border", isDarkMode ? "bg-[#1E293B] border-gray-800" : "bg-white border-white")}>
+                    <div 
+                        className={cn(
+                            "lg:col-span-4 p-6 rounded-3xl shadow-sm transition-all hover:shadow-md border",
+                            "animate-fade-in",
+                            isDarkMode ? "bg-[#1E293B] border-gray-800" : "bg-white border-white"
+                        )}
+                        style={{ animationDelay: '200ms', animationFillMode: 'backwards' }}
+                    >
                         <div className="flex justify-between items-center mb-4">
                             <h3 className={cn("text-lg font-normal tracking-wide", isDarkMode ? "text-white" : "text-gray-900")}>Strategic Priorities</h3>
                             <button
@@ -390,7 +411,14 @@ export default function CRMOperations() {
                 {/* Second Row - Average Deal Value & Schedule (Side by Side like reference) */}
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 mb-4">
                     {/* Average Deal Value Chart - Left Side */}
-                    <div className={cn("lg:col-span-7 p-6 rounded-3xl shadow-sm transition-all hover:shadow-md border", isDarkMode ? "bg-[#1E293B] border-gray-800" : "bg-white border-white")}>
+                    <div 
+                        className={cn(
+                            "lg:col-span-7 p-6 rounded-3xl shadow-sm transition-all hover:shadow-md border",
+                            "animate-fade-in",
+                            isDarkMode ? "bg-[#1E293B] border-gray-800" : "bg-white border-white"
+                        )}
+                        style={{ animationDelay: '300ms', animationFillMode: 'backwards' }}
+                    >
                         <div className="flex justify-between items-center mb-4">
                             <div>
                                 <h3 className={cn("text-lg font-normal tracking-wide", isDarkMode ? "text-white" : "text-gray-900")}>Average Deal Value</h3>
@@ -432,7 +460,14 @@ export default function CRMOperations() {
                     </div>
 
                     {/* Your Schedule - Right Side */}
-                    <div className={cn("lg:col-span-5 p-6 rounded-3xl shadow-sm transition-all hover:shadow-md border", isDarkMode ? "bg-[#1E293B] border-gray-800" : "bg-white border-white")}>
+                    <div 
+                        className={cn(
+                            "lg:col-span-5 p-6 rounded-3xl shadow-sm transition-all hover:shadow-md border",
+                            "animate-fade-in",
+                            isDarkMode ? "bg-[#1E293B] border-gray-800" : "bg-white border-white"
+                        )}
+                        style={{ animationDelay: '400ms', animationFillMode: 'backwards' }}
+                    >
                         <div className="flex justify-between items-center mb-4">
                             <h3 className={cn("text-lg font-normal tracking-wide", isDarkMode ? "text-white" : "text-gray-900")}>Your Schedule</h3>
                             <button className={cn("flex items-center gap-1 text-xs text-gray-500 border px-2 py-1 rounded-lg", isDarkMode ? "border-gray-700" : "border-gray-200")}>
@@ -553,7 +588,12 @@ export default function CRMOperations() {
                     {/* Pending Action Items */}
                     <div
                         onClick={() => navigate('/crm/tasks')}
-                        className={cn("lg:col-span-6 p-5 rounded-3xl shadow-sm transition-all hover:shadow-md border flex items-center justify-between cursor-pointer", isDarkMode ? "bg-[#1E293B] border-gray-800" : "bg-white border-white")}
+                        className={cn(
+                            "lg:col-span-6 p-5 rounded-3xl shadow-sm transition-all hover:shadow-md border flex items-center justify-between cursor-pointer",
+                            "animate-fade-in",
+                            isDarkMode ? "bg-[#1E293B] border-gray-800" : "bg-white border-white"
+                        )}
+                        style={{ animationDelay: '500ms', animationFillMode: 'backwards' }}
                     >
                         <div>
                             <h3 className={cn("text-lg font-normal tracking-wide", isDarkMode ? "text-white" : "text-gray-900")}>Pending Action Items</h3>
@@ -565,7 +605,14 @@ export default function CRMOperations() {
                     </div>
 
                     {/* Quick Revenue Summary */}
-                    <div className={cn("lg:col-span-6 p-5 rounded-3xl shadow-sm transition-all hover:shadow-md border", isDarkMode ? "bg-[#1E293B] border-gray-800" : "bg-white border-white")}>
+                    <div 
+                        className={cn(
+                            "lg:col-span-6 p-5 rounded-3xl shadow-sm transition-all hover:shadow-md border",
+                            "animate-fade-in",
+                            isDarkMode ? "bg-[#1E293B] border-gray-800" : "bg-white border-white"
+                        )}
+                        style={{ animationDelay: '550ms', animationFillMode: 'backwards' }}
+                    >
                         <h3 className={cn("text-lg font-normal tracking-wide mb-4", isDarkMode ? "text-white" : "text-gray-900")}>Quick Summary</h3>
                         <div className="grid grid-cols-2 gap-4">
                             <div>
@@ -582,7 +629,14 @@ export default function CRMOperations() {
 
                 {/* Fourth Row - Revenue Analytics */}
                 <div className="grid grid-cols-1 gap-4">
-                    <div className={cn("p-6 rounded-3xl shadow-sm transition-all hover:shadow-md border relative overflow-hidden", isDarkMode ? "bg-[#1E293B] border-gray-800" : "bg-white border-white")}>
+                    <div 
+                        className={cn(
+                            "p-6 rounded-3xl shadow-sm transition-all hover:shadow-md border relative overflow-hidden",
+                            "animate-fade-in",
+                            isDarkMode ? "bg-[#1E293B] border-gray-800" : "bg-white border-white"
+                        )}
+                        style={{ animationDelay: '600ms', animationFillMode: 'backwards' }}
+                    >
                         <div className="flex justify-between items-center mb-4 relative z-10">
                             <h3 className={cn("text-lg font-normal tracking-wide", isDarkMode ? "text-white" : "text-gray-900")}>Revenue Analytics</h3>
                             <button className={cn("flex items-center gap-1 text-xs text-gray-500 border px-2 py-1 rounded-lg", isDarkMode ? "bg-[#1E293B] border-gray-700" : "bg-white border-gray-200")}>
