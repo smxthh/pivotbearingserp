@@ -29,7 +29,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import { Plus, Trash2, Edit2 } from 'lucide-react';
+import { Plus, Trash2, Edit2, Truck } from 'lucide-react';
 import * as SelectPrimitive from '@radix-ui/react-select';
 import {
     usePurchaseOrders,
@@ -39,6 +39,7 @@ import {
 import { useVoucherPrefixesForType } from '@/hooks/useVoucherPrefixes';
 import { useParties } from '@/hooks/useParties';
 import { SearchablePartySelect } from '@/components/shared/SearchablePartySelect';
+import { TransportSelectionDialog } from '@/components/shared/TransportSelectionDialog';
 import { ItemSelectionDialog, InvoiceItem } from '@/components/accounting/ItemSelectionDialog';
 import { supabase } from '@/integrations/supabase/client';
 import { PartyDialog } from '@/components/parties/PartyDialog';
@@ -100,6 +101,7 @@ export function PurchaseOrderDialog({
     const [selectedAddressId, setSelectedAddressId] = useState<string>('default');
     const [useCustomAddress, setUseCustomAddress] = useState(false);
     const [isPartyDialogOpen, setIsPartyDialogOpen] = useState(false);
+    const [isTransportDialogOpen, setIsTransportDialogOpen] = useState(false);
 
     // Ref to track last processed party ID to prevent double-processing
     const lastProcessedPartyIdRef = useRef<string>('');
@@ -562,7 +564,23 @@ export function PurchaseOrderDialog({
                         <div className="grid grid-cols-12 gap-4">
                             <div className="col-span-4 space-y-2">
                                 <Label className="text-sm">Transport Name</Label>
-                                <Input {...register('transport_name')} placeholder="Transport Name" />
+                                <div className="flex gap-2">
+                                    <Input
+                                        {...register('transport_name')}
+                                        placeholder="Select Transport"
+                                        readOnly
+                                        className="cursor-pointer bg-muted/30"
+                                        onClick={() => setIsTransportDialogOpen(true)}
+                                    />
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="icon"
+                                        onClick={() => setIsTransportDialogOpen(true)}
+                                    >
+                                        <Truck className="h-4 w-4" />
+                                    </Button>
+                                </div>
                             </div>
 
                             <div className="col-span-4 space-y-2">
@@ -856,6 +874,13 @@ export function PurchaseOrderDialog({
                 onSuccess={() => {
                     refetchParties();
                 }}
+            />
+
+            <TransportSelectionDialog
+                open={isTransportDialogOpen}
+                onOpenChange={setIsTransportDialogOpen}
+                selectedTransportName={watch('transport_name') || ''}
+                onTransportChange={(name) => setValue('transport_name', name)}
             />
         </>
     );
