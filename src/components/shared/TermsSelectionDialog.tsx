@@ -36,11 +36,15 @@ export function TermsSelectionDialog({
     const [localSelection, setLocalSelection] = useState<string[]>([]);
 
     // Filter terms by type if specified, and only active terms
+    // If no termType filter is provided, show all active terms
     const filteredTerms = terms.filter(term => {
-        if (!term.is_active) return false;
+        // Skip inactive terms (but allow null/undefined is_active as active)
+        if (term.is_active === false) return false;
+        // If termType filter is specified and term has a type, match them
         if (termType && term.type) {
             return term.type.toLowerCase() === termType.toLowerCase();
         }
+        // If no termType filter, show all terms
         return true;
     });
 

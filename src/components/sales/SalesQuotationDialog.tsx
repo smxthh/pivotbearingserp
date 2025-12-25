@@ -671,7 +671,6 @@ export function SalesQuotationDialog({ open, onOpenChange, sourceEnquiryId }: Sa
                 onOpenChange={setIsTermsDialogOpen}
                 selectedTerms={termsConditions}
                 onTermsChange={setTermsConditions}
-                termType="quotation"
             />
         </>
     );
