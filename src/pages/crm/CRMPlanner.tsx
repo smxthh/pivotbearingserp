@@ -187,10 +187,10 @@ export default function CRMPlanner() {
                         <div className="bg-white rounded-xl border border-slate-200 p-6">
                             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
                                 {cityPerformance.slice(0, 5).map((city, idx) => (
-                                    <div key={city.city} className="text-center p-3 rounded-lg bg-slate-50">
-                                        <div className="font-semibold text-slate-900">{city.city}</div>
+                                    <div key={city.city_name} className="text-center p-3 rounded-lg bg-slate-50">
+                                        <div className="font-semibold text-slate-900">{city.city_name}</div>
                                         <div className="text-lg font-bold text-primary mt-1">{formatCurrency(city.total_revenue)}</div>
-                                        <div className="text-xs text-slate-500">{city.customer_count} customers</div>
+                                        <div className="text-xs text-slate-500">{city.deal_count} deals</div>
                                     </div>
                                 ))}
                             </div>

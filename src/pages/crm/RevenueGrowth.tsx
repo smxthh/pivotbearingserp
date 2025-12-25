@@ -16,7 +16,7 @@ export default function RevenueGrowth() {
     }
 
     // Get top performing zone from city performance
-    const topZone = cityPerformance.length > 0 ? cityPerformance[0].city : 'N/A';
+    const topZone = cityPerformance.length > 0 ? cityPerformance[0].city_name : 'N/A';
 
     return (
         <PageContainer title="Revenue & Growth" description="Performance Trends & Forecasts">
