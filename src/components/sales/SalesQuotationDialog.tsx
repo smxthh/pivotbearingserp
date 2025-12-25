@@ -32,12 +32,13 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import { Plus, Trash2, Edit2 } from 'lucide-react';
+import { Plus, Trash2, Edit2, FileText } from 'lucide-react';
 import { useVouchers, VoucherItemInsert, LedgerPostingItem } from '@/hooks/useVouchers';
 import { useParties } from '@/hooks/useParties';
 import { useVoucherPrefixesForType } from '@/hooks/useVoucherPrefixes';
 import { SearchablePartySelect } from '@/components/shared/SearchablePartySelect';
 import { ItemSelectionDialog, InvoiceItem } from '@/components/accounting/ItemSelectionDialog';
+import { TermsSelectionDialog } from '@/components/shared/TermsSelectionDialog';
 import * as SelectPrimitive from '@radix-ui/react-select';
 import { useSalesExecutives } from '@/hooks/useSalesExecutives';
 
@@ -81,6 +82,7 @@ export function SalesQuotationDialog({ open, onOpenChange, sourceEnquiryId }: Sa
     const [editingItem, setEditingItem] = useState<InvoiceItem | null>(null);
     const [editingIndex, setEditingIndex] = useState<number>(-1);
     const [termsConditions, setTermsConditions] = useState<string[]>([]);
+    const [isTermsDialogOpen, setIsTermsDialogOpen] = useState(false);
 
     // Fetch prefixes from centralized system
     const { prefixes: dbPrefixes, defaultPrefix } = useVoucherPrefixesForType('Sales Quotation');
@@ -451,8 +453,15 @@ export function SalesQuotationDialog({ open, onOpenChange, sourceEnquiryId }: Sa
 
                             <div className="col-span-2 space-y-2">
                                 <Label className="text-sm">Terms & Conditions</Label>
-                                <Button type="button" variant="outline" size="sm" className="w-full">
-                                    T&C
+                                <Button 
+                                    type="button" 
+                                    variant="outline" 
+                                    size="sm" 
+                                    className="w-full"
+                                    onClick={() => setIsTermsDialogOpen(true)}
+                                >
+                                    <FileText className="h-4 w-4 mr-1" />
+                                    T&C {termsConditions.length > 0 && `(${termsConditions.length})`}
                                 </Button>
                             </div>
                         </div>
@@ -655,6 +664,14 @@ export function SalesQuotationDialog({ open, onOpenChange, sourceEnquiryId }: Sa
                 onSave={handleItemSave}
                 onSaveAndClose={handleItemSaveAndClose}
                 editItem={editingItem}
+            />
+
+            <TermsSelectionDialog
+                open={isTermsDialogOpen}
+                onOpenChange={setIsTermsDialogOpen}
+                selectedTerms={termsConditions}
+                onTermsChange={setTermsConditions}
+                termType="quotation"
             />
         </>
     );
