@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tansta
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useDistributorProfile } from './useDistributorProfile';
+import { useRealtimeSubscription } from './useRealtimeSubscription';
 import { toast } from 'sonner';
 
 // ============================================
@@ -132,11 +133,16 @@ export function useVoucherPrefixes(options: UseVoucherPrefixesOptions = {}) {
     const { profile, isLoading: isProfileLoading } = useDistributorProfile();
     const isEnabled = !!profile?.id && !isProfileLoading;
 
+    const queryKey = ['voucher_prefixes', profile?.id, page, pageSize, search, voucherName];
+
+    // Realtime subscription for automatic sync
+    useRealtimeSubscription('voucher_prefixes', queryKey as string[], undefined, isEnabled);
+
     // ========================================
     // FETCH PREFIXES
     // ========================================
     const { data, isLoading, refetch } = useQuery({
-        queryKey: ['voucher_prefixes', profile?.id, page, pageSize, search, voucherName],
+        queryKey,
         queryFn: async () => {
             if (!profile?.id) return { data: [], count: 0 };
 

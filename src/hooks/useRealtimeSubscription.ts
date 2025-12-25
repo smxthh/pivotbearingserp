@@ -27,6 +27,21 @@ type TableName =
     | 'gst_summary'
     // Permissions
     | 'user_permissions'
+    // Config master tables
+    | 'voucher_prefixes'
+    | 'hsn_master'
+    | 'tax_master'
+    | 'tax_class'
+    | 'group_master'
+    | 'expense_master'
+    | 'terms'
+    | 'transports'
+    | 'store_locations'
+    | 'brands'
+    | 'marking'
+    | 'packing'
+    | 'opening_stock'
+    | 'gate_inwards'
     | ''; // Empty string for disabled subscriptions
 
 interface UseRealtimeOptions {

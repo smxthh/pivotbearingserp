@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useDistributorId } from './useDistributorProfile';
+import { useRealtimeSubscription } from './useRealtimeSubscription';
 import { toast } from 'sonner';
 
 // Types
@@ -33,10 +34,16 @@ export interface BrandUpdate {
 export function useBrands() {
     const queryClient = useQueryClient();
     const { data: distributorId } = useDistributorId();
+    const isEnabled = !!distributorId;
+
+    const queryKey = ['brands', distributorId];
+
+    // Realtime subscription for automatic sync
+    useRealtimeSubscription('brands', queryKey as string[], undefined, isEnabled);
 
     // Fetch brands - temporarily return empty array until migration runs
     const { data: brands = [], isLoading, error, refetch } = useQuery({
-        queryKey: ['brands', distributorId],
+        queryKey,
         queryFn: async (): Promise<Brand[]> => {
             if (!distributorId) return [];
 

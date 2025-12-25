@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useDistributorProfile } from './useDistributorProfile';
+import { useRealtimeSubscription } from './useRealtimeSubscription';
 import { Tables, TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
 import { toast } from 'sonner';
 
@@ -26,9 +27,15 @@ export type GateInwardItemUpdate = TablesUpdate<'gate_inward_items'>;
 export function useGateInward(id?: string) {
     const queryClient = useQueryClient();
     const { profile, isLoading: isProfileLoading } = useDistributorProfile();
+    const isEnabled = !!profile?.id && !isProfileLoading && !id;
+
+    const queryKey = ['gate-inwards', profile?.id];
+
+    // Realtime subscription for automatic sync
+    useRealtimeSubscription('gate_inwards', queryKey as string[], undefined, isEnabled);
 
     const { data: gateInwards = [], isLoading, refetch } = useQuery({
-        queryKey: ['gate-inwards', profile?.id],
+        queryKey,
         queryFn: async () => {
             if (!profile?.id) return [];
 
@@ -50,7 +57,7 @@ export function useGateInward(id?: string) {
             if (error) throw error;
             return data as unknown as GateInward[];
         },
-        enabled: !!profile?.id && !isProfileLoading && !id,
+        enabled: isEnabled,
     });
 
     const { data: gateInward, isLoading: isDetailsLoading } = useQuery({

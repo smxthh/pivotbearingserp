@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useDistributorProfile } from './useDistributorProfile';
+import { useRealtimeSubscription } from './useRealtimeSubscription';
 import { toast } from 'sonner';
 
 import { Tables, TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
@@ -28,9 +29,15 @@ export type UpdateStoreLocation = Partial<CreateStoreLocation>;
 export function useStoreLocations() {
     const queryClient = useQueryClient();
     const { profile, isLoading: isProfileLoading } = useDistributorProfile();
+    const isEnabled = !!profile?.id && !isProfileLoading;
+
+    const queryKey = ['store-locations', profile?.id];
+
+    // Realtime subscription for automatic sync
+    useRealtimeSubscription('store_locations', queryKey as string[], undefined, isEnabled);
 
     const { data: storeLocations = [], isLoading, error, refetch } = useQuery({
-        queryKey: ['store-locations', profile?.id],
+        queryKey,
         queryFn: async () => {
             if (!profile?.id) return [];
 
