@@ -709,25 +709,19 @@ export default function CRMOperations() {
                                     ))}
                                 </div>
                                 <div className="flex gap-2 items-center">
-                                    <select
+                                    <Input
+                                        type="time"
                                         value={newMeeting.startTime}
                                         onChange={(e) => setNewMeeting({ ...newMeeting, startTime: e.target.value })}
-                                        className="h-9 text-sm rounded-lg border border-gray-200 px-2 bg-white focus:ring-1 focus:ring-[#7C3AED] focus:border-[#7C3AED]"
-                                    >
-                                        {Array.from({ length: 24 }, (_, i) => (
-                                            <option key={i} value={`${String(i).padStart(2, '0')}:00`}>{String(i).padStart(2, '0')}:00</option>
-                                        ))}
-                                    </select>
+                                        className="h-9 w-32 text-sm"
+                                    />
                                     <span className="text-sm text-gray-400">→</span>
-                                    <select
+                                    <Input
+                                        type="time"
                                         value={newMeeting.endTime}
                                         onChange={(e) => setNewMeeting({ ...newMeeting, endTime: e.target.value })}
-                                        className="h-9 text-sm rounded-lg border border-gray-200 px-2 bg-white focus:ring-1 focus:ring-[#7C3AED] focus:border-[#7C3AED]"
-                                    >
-                                        {Array.from({ length: 24 }, (_, i) => (
-                                            <option key={i} value={`${String(i).padStart(2, '0')}:00`}>{String(i).padStart(2, '0')}:00</option>
-                                        ))}
-                                    </select>
+                                        className="h-9 w-32 text-sm"
+                                    />
                                 </div>
                             </div>
                         </div>
