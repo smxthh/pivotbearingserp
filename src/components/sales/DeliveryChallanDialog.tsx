@@ -30,11 +30,12 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import { Plus, Trash2, Edit2 } from 'lucide-react';
+import { Plus, Trash2, Edit2, Truck } from 'lucide-react';
 import { useVouchers, VoucherItemInsert } from '@/hooks/useVouchers';
 import { useParties } from '@/hooks/useParties';
 import { useVoucherPrefixesForType } from '@/hooks/useVoucherPrefixes';
 import { SearchablePartySelect } from '@/components/shared/SearchablePartySelect';
+import { TransportSelectionDialog } from '@/components/shared/TransportSelectionDialog';
 import * as SelectPrimitive from '@radix-ui/react-select';
 import { DeliveryChallanItemDialog, ChallanItem } from './DeliveryChallanItemDialog';
 
@@ -74,6 +75,7 @@ export function DeliveryChallanDialog({ open, onOpenChange, sourceOrderId }: Del
     const [isItemDialogOpen, setIsItemDialogOpen] = useState(false);
     const [editingItem, setEditingItem] = useState<ChallanItem | null>(null);
     const [editingIndex, setEditingIndex] = useState<number>(-1);
+    const [isTransportDialogOpen, setIsTransportDialogOpen] = useState(false);
 
     // Fetch prefixes from centralized system
     const { prefixes: dbPrefixes, defaultPrefix } = useVoucherPrefixesForType('Delivery Challan');
@@ -406,7 +408,23 @@ export function DeliveryChallanDialog({ open, onOpenChange, sourceOrderId }: Del
 
                             <div className="col-span-3 space-y-2">
                                 <Label className="text-sm">Transport Name</Label>
-                                <Input {...register('transport_name')} placeholder="Select Transport" />
+                                <div className="flex gap-2">
+                                    <Input
+                                        {...register('transport_name')}
+                                        placeholder="Select Transport"
+                                        readOnly
+                                        className="cursor-pointer bg-muted/30"
+                                        onClick={() => setIsTransportDialogOpen(true)}
+                                    />
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="icon"
+                                        onClick={() => setIsTransportDialogOpen(true)}
+                                    >
+                                        <Truck className="h-4 w-4" />
+                                    </Button>
+                                </div>
                             </div>
 
                             <div className="col-span-2 space-y-2">
@@ -529,6 +547,13 @@ export function DeliveryChallanDialog({ open, onOpenChange, sourceOrderId }: Del
                 onOpenChange={setIsItemDialogOpen}
                 onSave={handleItemSave}
                 editItem={editingItem}
+            />
+
+            <TransportSelectionDialog
+                open={isTransportDialogOpen}
+                onOpenChange={setIsTransportDialogOpen}
+                selectedTransportName={watch('transport_name') || ''}
+                onTransportChange={(name) => setValue('transport_name', name)}
             />
         </>
     );
