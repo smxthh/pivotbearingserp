@@ -49,6 +49,8 @@ const formSchema = z.object({
     po_number: z.string().optional(),
     po_date: z.string().optional(),
     transport_name: z.string().optional(),
+    transport_id: z.string().optional(),
+    transport_address: z.string().optional(),
     lr_number: z.string().optional(),
     ship_to: z.string().optional(),
     notes: z.string().optional(),
@@ -104,6 +106,8 @@ export function DeliveryChallanDialog({ open, onOpenChange, sourceOrderId }: Del
             po_number: '',
             po_date: '',
             transport_name: '',
+            transport_id: '',
+            transport_address: '',
             lr_number: '',
             ship_to: '',
             notes: '',
@@ -407,10 +411,10 @@ export function DeliveryChallanDialog({ open, onOpenChange, sourceOrderId }: Del
                             </div>
 
                             <div className="col-span-3 space-y-2">
-                                <Label className="text-sm">Transport Name</Label>
+                                <Label className="text-sm">Transport</Label>
                                 <div className="flex gap-2">
                                     <Input
-                                        {...register('transport_name')}
+                                        value={watch('transport_name') || ''}
                                         placeholder="Select Transport"
                                         readOnly
                                         className="cursor-pointer bg-muted/30"
@@ -432,6 +436,24 @@ export function DeliveryChallanDialog({ open, onOpenChange, sourceOrderId }: Del
                                 <Input {...register('lr_number')} placeholder="L.R. No." />
                             </div>
                         </div>
+
+                        {/* Transport Details Row - shown when transport is selected */}
+                        {watch('transport_name') && (
+                            <div className="grid grid-cols-12 gap-4 p-3 bg-muted/30 rounded-lg border">
+                                <div className="col-span-4 space-y-1">
+                                    <Label className="text-xs text-muted-foreground">Transport Name</Label>
+                                    <p className="text-sm font-medium">{watch('transport_name')}</p>
+                                </div>
+                                <div className="col-span-3 space-y-1">
+                                    <Label className="text-xs text-muted-foreground">Transport ID</Label>
+                                    <p className="text-sm font-medium">{watch('transport_id') || '-'}</p>
+                                </div>
+                                <div className="col-span-5 space-y-1">
+                                    <Label className="text-xs text-muted-foreground">Address</Label>
+                                    <p className="text-sm font-medium">{watch('transport_address') || '-'}</p>
+                                </div>
+                            </div>
+                        )}
 
                         {/* Row 3: Remark */}
                         <div className="grid grid-cols-12 gap-4">
@@ -553,7 +575,11 @@ export function DeliveryChallanDialog({ open, onOpenChange, sourceOrderId }: Del
                 open={isTransportDialogOpen}
                 onOpenChange={setIsTransportDialogOpen}
                 selectedTransportName={watch('transport_name') || ''}
-                onTransportChange={(name) => setValue('transport_name', name)}
+                onTransportChange={(name, id, address) => {
+                    setValue('transport_name', name);
+                    setValue('transport_id', id || '');
+                    setValue('transport_address', address || '');
+                }}
             />
         </>
     );

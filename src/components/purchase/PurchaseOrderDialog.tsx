@@ -51,6 +51,8 @@ const formSchema = z.object({
     po_date: z.string().min(1, 'Required'),
     party_id: z.string().min(1, 'Required'),
     transport_name: z.string().optional(),
+    transport_id: z.string().optional(),
+    transport_address: z.string().optional(),
     contact_person: z.string().optional(),
     contact_number: z.string().optional(),
     delivery_address: z.string().optional(),
@@ -128,6 +130,8 @@ export function PurchaseOrderDialog({
             po_date: today,
             party_id: '',
             transport_name: '',
+            transport_id: '',
+            transport_address: '',
             contact_person: '',
             contact_number: '',
             delivery_address: '',
@@ -563,10 +567,10 @@ export function PurchaseOrderDialog({
                         {/* Row 2: Transport, Contact Person, Contact No */}
                         <div className="grid grid-cols-12 gap-4">
                             <div className="col-span-4 space-y-2">
-                                <Label className="text-sm">Transport Name</Label>
+                                <Label className="text-sm">Transport</Label>
                                 <div className="flex gap-2">
                                     <Input
-                                        {...register('transport_name')}
+                                        value={watch('transport_name') || ''}
                                         placeholder="Select Transport"
                                         readOnly
                                         className="cursor-pointer bg-muted/30"
@@ -593,6 +597,24 @@ export function PurchaseOrderDialog({
                                 <Input {...register('contact_number')} placeholder="Contact No." />
                             </div>
                         </div>
+
+                        {/* Transport Details Row - shown when transport is selected */}
+                        {watch('transport_name') && (
+                            <div className="grid grid-cols-12 gap-4 p-3 bg-muted/30 rounded-lg border">
+                                <div className="col-span-4 space-y-1">
+                                    <Label className="text-xs text-muted-foreground">Transport Name</Label>
+                                    <p className="text-sm font-medium">{watch('transport_name')}</p>
+                                </div>
+                                <div className="col-span-3 space-y-1">
+                                    <Label className="text-xs text-muted-foreground">Transport ID</Label>
+                                    <p className="text-sm font-medium">{watch('transport_id') || '-'}</p>
+                                </div>
+                                <div className="col-span-5 space-y-1">
+                                    <Label className="text-xs text-muted-foreground">Address</Label>
+                                    <p className="text-sm font-medium">{watch('transport_address') || '-'}</p>
+                                </div>
+                            </div>
+                        )}
 
                         {/* Delivery Address */}
                         <div className="space-y-2">
@@ -880,7 +902,11 @@ export function PurchaseOrderDialog({
                 open={isTransportDialogOpen}
                 onOpenChange={setIsTransportDialogOpen}
                 selectedTransportName={watch('transport_name') || ''}
-                onTransportChange={(name) => setValue('transport_name', name)}
+                onTransportChange={(name, id, address) => {
+                    setValue('transport_name', name);
+                    setValue('transport_id', id || '');
+                    setValue('transport_address', address || '');
+                }}
             />
         </>
     );
