@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useDistributorProfile } from './useDistributorProfile';
+import { useRealtimeSubscription } from './useRealtimeSubscription';
 import { toast } from 'sonner';
 
 export interface OpeningStock {
@@ -33,9 +34,14 @@ export function useOpeningStock({ page = 1, pageSize = 25, search = '' }: { page
 
     const isEnabled = !!profile?.id && !isProfileLoading;
 
+    const queryKey = ['opening_stock', profile?.id, page, pageSize, search];
+
+    // Realtime subscription for automatic sync
+    useRealtimeSubscription('opening_stock', queryKey as string[], undefined, isEnabled);
+
     // Fetch all opening stock records with pagination and search
     const { data, isLoading, refetch } = useQuery({
-        queryKey: ['opening_stock', profile?.id, page, pageSize, search],
+        queryKey,
         queryFn: async () => {
             if (!profile?.id) return { data: [], count: 0 };
 

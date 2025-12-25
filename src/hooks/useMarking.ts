@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useDistributorProfile } from './useDistributorProfile';
+import { useRealtimeSubscription } from './useRealtimeSubscription';
 import { toast } from 'sonner';
 
 export interface Marking {
@@ -53,9 +54,14 @@ export function useMarking({ page = 1, pageSize = 25, search = '' }: { page?: nu
     // Fix: Only enable query if profile explicitly exists
     const isEnabled = !!profile?.id && !isProfileLoading;
 
+    const queryKey = ['marking', profile?.id, page, pageSize, search];
+
+    // Realtime subscription for automatic sync
+    useRealtimeSubscription('marking', queryKey as string[], undefined, isEnabled);
+
     // Fetch all marking records with pagination and search
     const { data, isLoading, refetch } = useQuery({
-        queryKey: ['marking', profile?.id, page, pageSize, search],
+        queryKey,
         queryFn: async () => {
             if (!profile?.id) return { data: [], count: 0 };
 

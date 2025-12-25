@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useDistributorProfile } from './useDistributorProfile';
+import { useRealtimeSubscription } from './useRealtimeSubscription';
 import { toast } from 'sonner';
 
 export interface TaxClass {
@@ -41,8 +42,13 @@ export function useTaxClass(options: UseTaxClassOptions = {}) {
     const { profile, isLoading: isProfileLoading } = useDistributorProfile();
     const isEnabled = !!profile?.id && !isProfileLoading;
 
+    const queryKey = ['tax_class', profile?.id, page, pageSize, search];
+
+    // Realtime subscription for automatic sync
+    useRealtimeSubscription('tax_class', queryKey as string[], undefined, isEnabled);
+
     const { data, isLoading, refetch } = useQuery({
-        queryKey: ['tax_class', profile?.id, page, pageSize, search],
+        queryKey,
         queryFn: async () => {
             if (!profile?.id) return { data: [], count: 0 };
 
