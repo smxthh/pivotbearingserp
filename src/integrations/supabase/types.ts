@@ -136,6 +136,105 @@ export type Database = {
           },
         ]
       }
+      crm_goals: {
+        Row: {
+          breakdown_json: Json | null
+          created_at: string | null
+          created_by: string | null
+          id: string
+          target_amount: number
+          target_year: number
+          tenant_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          breakdown_json?: Json | null
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          target_amount?: number
+          target_year: number
+          tenant_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          breakdown_json?: Json | null
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          target_amount?: number
+          target_year?: number
+          tenant_id?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      crm_meetings: {
+        Row: {
+          created_at: string | null
+          created_by: string
+          description: string | null
+          end_time: string
+          id: string
+          location: string | null
+          start_time: string
+          status: string
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string
+          description?: string | null
+          end_time: string
+          id?: string
+          location?: string | null
+          start_time: string
+          status?: string
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string
+          description?: string | null
+          end_time?: string
+          id?: string
+          location?: string | null
+          start_time?: string
+          status?: string
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      crm_monthly_targets: {
+        Row: {
+          created_at: string | null
+          id: string
+          target_amount: number
+          target_month: string
+          tenant_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          target_amount?: number
+          target_month: string
+          tenant_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          target_amount?: number
+          target_month?: string
+          tenant_id?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       data_export_logs: {
         Row: {
           created_at: string
@@ -3711,41 +3810,6 @@ export type Database = {
       }
     }
     Functions: {
-      crm_analyze_goal: {
-        Args: {
-          target_revenue: number
-          timeframe_months: number
-          sim_conversion_boost?: number
-          sim_avg_value_boost?: number
-          sim_lead_volume_boost?: number
-        }
-        Returns: Database["public"]["CompositeTypes"]["crm_analysis_result"]
-      }
-      crm_get_baseline_metrics: {
-        Args: {
-          period_start: string
-          period_end: string
-        }
-        Returns: Database["public"]["CompositeTypes"]["crm_baseline_metrics"]
-      }
-      crm_get_command_dashboard: {
-        Args: {
-          target_monthly_revenue?: number
-        }
-        Returns: Database["public"]["CompositeTypes"]["crm_command_dashboard_data"]
-      }
-      crm_get_pipeline_intelligence: {
-        Args: Record<PropertyKey, never>
-        Returns: Database["public"]["CompositeTypes"]["crm_pipeline_stage"][]
-      }
-      crm_get_customer_intelligence: {
-        Args: Record<PropertyKey, never>
-        Returns: Database["public"]["CompositeTypes"]["crm_customer_insight"][]
-      }
-      crm_get_tasks_execution: {
-        Args: Record<PropertyKey, never>
-        Returns: Database["public"]["CompositeTypes"]["crm_smart_task"][]
-      }
       accept_invitation: {
         Args: { p_invitation_id: string; p_user_id: string }
         Returns: boolean
@@ -3774,9 +3838,127 @@ export type Database = {
         Returns: Json
       }
       create_voucher_atomic:
-      | { Args: { p_items: Json; p_voucher: Json }; Returns: Json }
-      | {
-        Args: { p_items: Json; p_ledgers?: Json; p_voucher: Json }
+        | { Args: { p_items: Json; p_voucher: Json }; Returns: Json }
+        | {
+            Args: { p_items: Json; p_ledgers?: Json; p_voucher: Json }
+            Returns: Json
+          }
+      crm_analyze_goal: {
+        Args: {
+          sim_avg_value_boost?: number
+          sim_conversion_boost?: number
+          sim_lead_volume_boost?: number
+          target_revenue: number
+          timeframe_months: number
+        }
+        Returns: Database["public"]["CompositeTypes"]["crm_analysis_result"]
+        SetofOptions: {
+          from: "*"
+          to: "crm_analysis_result"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      crm_get_baseline_metrics: {
+        Args: { period_end: string; period_start: string }
+        Returns: Database["public"]["CompositeTypes"]["crm_baseline_metrics"]
+        SetofOptions: {
+          from: "*"
+          to: "crm_baseline_metrics"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      crm_get_business_pulse: {
+        Args: never
+        Returns: Database["public"]["CompositeTypes"]["crm_business_pulse"]
+        SetofOptions: {
+          from: "*"
+          to: "crm_business_pulse"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      crm_get_city_performance: {
+        Args: never
+        Returns: Database["public"]["CompositeTypes"]["crm_city_performance"][]
+        SetofOptions: {
+          from: "*"
+          to: "crm_city_performance"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      crm_get_command_dashboard: {
+        Args: { target_monthly_revenue?: number }
+        Returns: Database["public"]["CompositeTypes"]["crm_command_dashboard_data"]
+        SetofOptions: {
+          from: "*"
+          to: "crm_command_dashboard_data"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      crm_get_customer_intelligence: {
+        Args: never
+        Returns: Database["public"]["CompositeTypes"]["crm_customer_insight"][]
+        SetofOptions: {
+          from: "*"
+          to: "crm_customer_insight"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      crm_get_financial_roadmap: {
+        Args: never
+        Returns: {
+          avg_monthly_burn: number
+          cash_on_hand: number
+          net_profit_this_month: number
+          total_expense_this_month: number
+          total_income_this_month: number
+          total_payables: number
+          total_receivables: number
+        }[]
+      }
+      crm_get_intelligence_report: { Args: never; Returns: Json }
+      crm_get_pipeline_intelligence: {
+        Args: never
+        Returns: Database["public"]["CompositeTypes"]["crm_pipeline_stage"][]
+        SetofOptions: {
+          from: "*"
+          to: "crm_pipeline_stage"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      crm_get_salesperson_rankings: {
+        Args: never
+        Returns: Database["public"]["CompositeTypes"]["crm_salesperson_performance"][]
+        SetofOptions: {
+          from: "*"
+          to: "crm_salesperson_performance"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      crm_get_tasks_execution: {
+        Args: never
+        Returns: Database["public"]["CompositeTypes"]["crm_smart_task"][]
+        SetofOptions: {
+          from: "*"
+          to: "crm_smart_task"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      crm_get_yearly_goal_progress: { Args: { p_year: number }; Returns: Json }
+      crm_set_monthly_target: {
+        Args: { p_target_amount: number }
+        Returns: string
+      }
+      crm_set_yearly_goal: {
+        Args: { p_amount: number; p_breakdown?: Json; p_year: number }
         Returns: Json
       }
       debug_post_sales_invoice: {
@@ -3819,18 +4001,18 @@ export type Database = {
         Returns: string
       }
       generate_voucher_number:
-      | {
-        Args: { p_distributor_id: string; p_voucher_type: string }
-        Returns: string
-      }
-      | {
-        Args: {
-          p_distributor_id: string
-          p_prefix?: string
-          p_voucher_type: Database["public"]["Enums"]["voucher_type"]
-        }
-        Returns: string
-      }
+        | {
+            Args: { p_distributor_id: string; p_voucher_type: string }
+            Returns: string
+          }
+        | {
+            Args: {
+              p_distributor_id: string
+              p_prefix?: string
+              p_voucher_type: Database["public"]["Enums"]["voucher_type"]
+            }
+            Returns: string
+          }
       get_category_children: {
         Args: { p_parent_id: string }
         Returns: {
@@ -3854,6 +4036,7 @@ export type Database = {
         }[]
       }
       get_current_financial_year: { Args: never; Returns: string }
+      get_current_user_tenant_id: { Args: never; Returns: string }
       get_ledger_id_by_name: {
         Args: { p_name: string; p_tenant_id: string }
         Returns: string
@@ -4024,76 +4207,108 @@ export type Database = {
       invoice_type: "sale" | "purchase" | "sale_return" | "purchase_return"
       item_type: "product" | "service"
       ledger_entry_type:
-      | "sale"
-      | "purchase"
-      | "receipt"
-      | "payment"
-      | "sale_return"
-      | "purchase_return"
-      | "opening"
-      | "adjustment"
+        | "sale"
+        | "purchase"
+        | "receipt"
+        | "payment"
+        | "sale_return"
+        | "purchase_return"
+        | "opening"
+        | "adjustment"
       ledger_nature:
-      | "assets"
-      | "liabilities"
-      | "income"
-      | "expenses"
-      | "capital"
+        | "assets"
+        | "liabilities"
+        | "income"
+        | "expenses"
+        | "capital"
       party_type: "customer" | "supplier" | "both"
       payment_mode: "cash" | "bank" | "cheque" | "upi" | "card" | "other"
       payment_status: "unpaid" | "partial" | "paid"
       payment_type: "receipt" | "payment"
       stock_movement_type:
-      | "sale"
-      | "purchase"
-      | "sale_return"
-      | "purchase_return"
-      | "adjustment"
-      | "opening"
+        | "sale"
+        | "purchase"
+        | "sale_return"
+        | "purchase_return"
+        | "adjustment"
+        | "opening"
       voucher_status: "draft" | "confirmed" | "cancelled"
       voucher_type:
-      | "purchase_invoice"
-      | "debit_note"
-      | "tax_invoice"
-      | "credit_note"
-      | "receipt_voucher"
-      | "journal_entry"
-      | "gst_payment"
-      | "tcs_tds_payment"
-      | "gst_journal"
-      | "gst_havala"
-      | "havala"
-      | "payment_voucher"
-      | "sales_enquiry"
-      | "sales_quotation"
-      | "sales_order"
-      | "delivery_challan"
-      | "purchase_order"
-      | "sales_invoice"
+        | "purchase_invoice"
+        | "debit_note"
+        | "tax_invoice"
+        | "credit_note"
+        | "receipt_voucher"
+        | "journal_entry"
+        | "gst_payment"
+        | "tcs_tds_payment"
+        | "gst_journal"
+        | "gst_havala"
+        | "havala"
+        | "payment_voucher"
+        | "sales_enquiry"
+        | "sales_quotation"
+        | "sales_order"
+        | "delivery_challan"
+        | "purchase_order"
+        | "sales_invoice"
     }
     CompositeTypes: {
       crm_analysis_result: {
-        current_projected_revenue: number | null
-        feasibility_status: string | null
-        gap_leads: number | null
-        gap_revenue: number | null
         is_feasible: boolean | null
-        recommendation_text: string | null
+        feasibility_status: string | null
+        required_revenue: number | null
         required_invoices: number | null
         required_leads: number | null
-        required_revenue: number | null
-        simulation_projected_revenue: number | null
+        current_projected_revenue: number | null
+        gap_revenue: number | null
+        gap_leads: number | null
         suggested_focus_area: string | null
+        recommendation_text: string | null
+        simulation_projected_revenue: number | null
       }
       crm_baseline_metrics: {
         avg_deal_value: number | null
-        avg_sales_cycle_days: number | null
         conversion_rate: number | null
+        avg_sales_cycle_days: number | null
         deals_per_salesperson_per_month: number | null
-        top_performing_product_category: string | null
-        top_performing_zone: string | null
+        total_revenue_last_period: number | null
         total_invoices_last_period: number | null
         total_leads_last_period: number | null
-        total_revenue_last_period: number | null
+        top_performing_zone: string | null
+        top_performing_product_category: string | null
+      }
+      crm_business_pulse: {
+        monthly_sales_target: number | null
+        daily_sales_target: number | null
+        revenue_mtd: number | null
+        revenue_today: number | null
+        customers_this_month: number | null
+        customers_today: number | null
+        deals_this_month: number | null
+        deals_today: number | null
+        avg_deal_value: number | null
+        avg_days_to_close: number | null
+        pending_quotes_count: number | null
+        pending_quotes_value: number | null
+        total_receivables: number | null
+        total_payables: number | null
+        cash_reserves: number | null
+        monthly_burn_rate: number | null
+        top_city: string | null
+        top_city_revenue: number | null
+        underserved_city: string | null
+        top_performer_name: string | null
+        top_performer_revenue: number | null
+        needs_coaching_name: string | null
+        needs_coaching_reason: string | null
+      }
+      crm_city_performance: {
+        city: string | null
+        state: string | null
+        total_revenue: number | null
+        customer_count: number | null
+        deal_count: number | null
       }
       crm_command_dashboard_data: {
         todays_leads: number | null
@@ -4102,18 +4317,28 @@ export type Database = {
         revenue_target_mtd: number | null
         top_blocker: string | null
       }
-      crm_pipeline_stage: {
-        stage: string | null
-        count: number | null
-        value: number | null
-        avg_age_days: number | null
-      }
       crm_customer_insight: {
         party_name: string | null
         segment: string | null
         last_order_days_ago: number | null
         total_revenue: number | null
         action_needed: string | null
+      }
+      crm_pipeline_stage: {
+        stage: string | null
+        count: number | null
+        value: number | null
+        avg_age_days: number | null
+      }
+      crm_salesperson_performance: {
+        salesperson_id: string | null
+        salesperson_name: string | null
+        total_revenue: number | null
+        total_deals: number | null
+        avg_deal_value: number | null
+        avg_days_to_close: number | null
+        deals_this_month: number | null
+        revenue_this_month: number | null
       }
       crm_smart_task: {
         task_type: string | null
@@ -4132,116 +4357,116 @@ type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
 
 export type Tables<
   DefaultSchemaTableNameOrOptions extends
-  | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
-  | { schema: keyof DatabaseWithoutInternals },
+    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-  ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-    DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-  : never = never,
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
   ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-    DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
       Row: infer R
     }
-  ? R
-  : never
+    ? R
+    : never
   : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
-    DefaultSchema["Views"])
-  ? (DefaultSchema["Tables"] &
-    DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
-      Row: infer R
-    }
-  ? R
-  : never
-  : never
+        DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+        Row: infer R
+      }
+      ? R
+      : never
+    : never
 
 export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
-  | keyof DefaultSchema["Tables"]
-  | { schema: keyof DatabaseWithoutInternals },
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-  ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-  : never = never,
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
   ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-    Insert: infer I
-  }
-  ? I
-  : never
+      Insert: infer I
+    }
+    ? I
+    : never
   : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-  ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-    Insert: infer I
-  }
-  ? I
-  : never
-  : never
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Insert: infer I
+      }
+      ? I
+      : never
+    : never
 
 export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
-  | keyof DefaultSchema["Tables"]
-  | { schema: keyof DatabaseWithoutInternals },
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-  ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-  : never = never,
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
   ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-    Update: infer U
-  }
-  ? U
-  : never
+      Update: infer U
+    }
+    ? U
+    : never
   : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-  ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-    Update: infer U
-  }
-  ? U
-  : never
-  : never
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Update: infer U
+      }
+      ? U
+      : never
+    : never
 
 export type Enums<
   DefaultSchemaEnumNameOrOptions extends
-  | keyof DefaultSchema["Enums"]
-  | { schema: keyof DatabaseWithoutInternals },
+    | keyof DefaultSchema["Enums"]
+    | { schema: keyof DatabaseWithoutInternals },
   EnumName extends DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-  ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-  : never = never,
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    : never = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
   ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
   : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
-  ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
-  : never
+    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+    : never
 
 export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
-  | keyof DefaultSchema["CompositeTypes"]
-  | { schema: keyof DatabaseWithoutInternals },
+    | keyof DefaultSchema["CompositeTypes"]
+    | { schema: keyof DatabaseWithoutInternals },
   CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-  ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-  : never = never,
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    : never = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
   ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
   : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
-  ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
-  : never
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+    : never
 
 export const Constants = {
   public: {
