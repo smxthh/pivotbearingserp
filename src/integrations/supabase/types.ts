@@ -136,6 +136,45 @@ export type Database = {
           },
         ]
       }
+      crm_daily_snapshots: {
+        Row: {
+          created_at: string | null
+          customers_cumulative: number | null
+          deals_cumulative: number | null
+          goal_progress_pct: number | null
+          id: string
+          revenue_cumulative: number | null
+          snapshot_date: string
+          tenant_id: string
+          top_performer_id: string | null
+          top_performer_revenue: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          customers_cumulative?: number | null
+          deals_cumulative?: number | null
+          goal_progress_pct?: number | null
+          id?: string
+          revenue_cumulative?: number | null
+          snapshot_date?: string
+          tenant_id: string
+          top_performer_id?: string | null
+          top_performer_revenue?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          customers_cumulative?: number | null
+          deals_cumulative?: number | null
+          goal_progress_pct?: number | null
+          id?: string
+          revenue_cumulative?: number | null
+          snapshot_date?: string
+          tenant_id?: string
+          top_performer_id?: string | null
+          top_performer_revenue?: number | null
+        }
+        Relationships: []
+      }
       crm_goals: {
         Row: {
           breakdown_json: Json | null
@@ -3859,6 +3898,7 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      crm_get_ai_context: { Args: never; Returns: Json }
       crm_get_baseline_metrics: {
         Args: { period_end: string; period_start: string }
         Returns: Database["public"]["CompositeTypes"]["crm_baseline_metrics"]
@@ -3909,6 +3949,7 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      crm_get_daily_action_plan: { Args: never; Returns: Json }
       crm_get_financial_roadmap: {
         Args: never
         Returns: {
@@ -3932,6 +3973,7 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      crm_get_sales_hierarchy: { Args: never; Returns: Json }
       crm_get_salesperson_rankings: {
         Args: never
         Returns: Database["public"]["CompositeTypes"]["crm_salesperson_performance"][]
@@ -3951,6 +3993,10 @@ export type Database = {
           isOneToOne: false
           isSetofReturn: true
         }
+      }
+      crm_get_unified_dashboard: {
+        Args: { p_view_mode?: string }
+        Returns: Json
       }
       crm_get_yearly_goal_progress: { Args: { p_year: number }; Returns: Json }
       crm_set_monthly_target: {
