@@ -18,7 +18,7 @@ interface TransportSelectionDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     selectedTransportName: string;
-    onTransportChange: (transportName: string, transportId?: string) => void;
+    onTransportChange: (transportName: string, transportId?: string, address?: string) => void;
 }
 
 export function TransportSelectionDialog({
@@ -59,7 +59,11 @@ export function TransportSelectionDialog({
 
     const handleApply = () => {
         const selectedTransport = transports.find(t => t.transport_name === localSelection);
-        onTransportChange(localSelection, selectedTransport?.transport_id);
+        onTransportChange(
+            localSelection,
+            selectedTransport?.transport_id,
+            selectedTransport?.address || undefined
+        );
         onOpenChange(false);
     };
 
@@ -97,21 +101,42 @@ export function TransportSelectionDialog({
                         />
                     </div>
 
-                    {/* Selected indicator */}
-                    {localSelection && (
-                        <div className="flex items-center justify-between text-sm bg-primary/5 border border-primary/20 rounded-lg px-3 py-2">
-                            <span className="font-medium">{localSelection}</span>
-                            <Button
-                                type="button"
-                                variant="ghost"
-                                size="sm"
-                                onClick={handleClear}
-                                className="h-6 text-xs"
-                            >
-                                Clear
-                            </Button>
-                        </div>
-                    )}
+                    {/* Selected transport details */}
+                    {localSelection && (() => {
+                        const selectedTransport = transports.find(t => t.transport_name === localSelection);
+                        return (
+                            <div className="bg-primary/5 border border-primary/20 rounded-lg p-3 space-y-2">
+                                <div className="flex items-center justify-between">
+                                    <span className="text-xs font-medium text-muted-foreground">Selected Transport</span>
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={handleClear}
+                                        className="h-6 text-xs"
+                                    >
+                                        Clear
+                                    </Button>
+                                </div>
+                                <div className="grid grid-cols-2 gap-3 text-sm">
+                                    <div>
+                                        <span className="text-xs text-muted-foreground">Transport Name</span>
+                                        <p className="font-medium">{selectedTransport?.transport_name || localSelection}</p>
+                                    </div>
+                                    <div>
+                                        <span className="text-xs text-muted-foreground">Transport ID</span>
+                                        <p className="font-medium">{selectedTransport?.transport_id || '-'}</p>
+                                    </div>
+                                    {selectedTransport?.address && (
+                                        <div className="col-span-2">
+                                            <span className="text-xs text-muted-foreground">Address</span>
+                                            <p className="font-medium">{selectedTransport.address}</p>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        );
+                    })()}
 
                     {/* Transports list */}
                     <ScrollArea className="h-[300px] border rounded-lg p-3">
