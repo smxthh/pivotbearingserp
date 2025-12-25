@@ -3711,6 +3711,41 @@ export type Database = {
       }
     }
     Functions: {
+      crm_analyze_goal: {
+        Args: {
+          target_revenue: number
+          timeframe_months: number
+          sim_conversion_boost?: number
+          sim_avg_value_boost?: number
+          sim_lead_volume_boost?: number
+        }
+        Returns: Database["public"]["CompositeTypes"]["crm_analysis_result"]
+      }
+      crm_get_baseline_metrics: {
+        Args: {
+          period_start: string
+          period_end: string
+        }
+        Returns: Database["public"]["CompositeTypes"]["crm_baseline_metrics"]
+      }
+      crm_get_command_dashboard: {
+        Args: {
+          target_monthly_revenue?: number
+        }
+        Returns: Database["public"]["CompositeTypes"]["crm_command_dashboard_data"]
+      }
+      crm_get_pipeline_intelligence: {
+        Args: Record<PropertyKey, never>
+        Returns: Database["public"]["CompositeTypes"]["crm_pipeline_stage"][]
+      }
+      crm_get_customer_intelligence: {
+        Args: Record<PropertyKey, never>
+        Returns: Database["public"]["CompositeTypes"]["crm_customer_insight"][]
+      }
+      crm_get_tasks_execution: {
+        Args: Record<PropertyKey, never>
+        Returns: Database["public"]["CompositeTypes"]["crm_smart_task"][]
+      }
       accept_invitation: {
         Args: { p_invitation_id: string; p_user_id: string }
         Returns: boolean
@@ -3739,11 +3774,11 @@ export type Database = {
         Returns: Json
       }
       create_voucher_atomic:
-        | { Args: { p_items: Json; p_voucher: Json }; Returns: Json }
-        | {
-            Args: { p_items: Json; p_ledgers?: Json; p_voucher: Json }
-            Returns: Json
-          }
+      | { Args: { p_items: Json; p_voucher: Json }; Returns: Json }
+      | {
+        Args: { p_items: Json; p_ledgers?: Json; p_voucher: Json }
+        Returns: Json
+      }
       debug_post_sales_invoice: {
         Args: { p_invoice_id: string }
         Returns: string
@@ -3784,18 +3819,18 @@ export type Database = {
         Returns: string
       }
       generate_voucher_number:
-        | {
-            Args: { p_distributor_id: string; p_voucher_type: string }
-            Returns: string
-          }
-        | {
-            Args: {
-              p_distributor_id: string
-              p_prefix?: string
-              p_voucher_type: Database["public"]["Enums"]["voucher_type"]
-            }
-            Returns: string
-          }
+      | {
+        Args: { p_distributor_id: string; p_voucher_type: string }
+        Returns: string
+      }
+      | {
+        Args: {
+          p_distributor_id: string
+          p_prefix?: string
+          p_voucher_type: Database["public"]["Enums"]["voucher_type"]
+        }
+        Returns: string
+      }
       get_category_children: {
         Args: { p_parent_id: string }
         Returns: {
@@ -3989,54 +4024,104 @@ export type Database = {
       invoice_type: "sale" | "purchase" | "sale_return" | "purchase_return"
       item_type: "product" | "service"
       ledger_entry_type:
-        | "sale"
-        | "purchase"
-        | "receipt"
-        | "payment"
-        | "sale_return"
-        | "purchase_return"
-        | "opening"
-        | "adjustment"
+      | "sale"
+      | "purchase"
+      | "receipt"
+      | "payment"
+      | "sale_return"
+      | "purchase_return"
+      | "opening"
+      | "adjustment"
       ledger_nature:
-        | "assets"
-        | "liabilities"
-        | "income"
-        | "expenses"
-        | "capital"
+      | "assets"
+      | "liabilities"
+      | "income"
+      | "expenses"
+      | "capital"
       party_type: "customer" | "supplier" | "both"
       payment_mode: "cash" | "bank" | "cheque" | "upi" | "card" | "other"
       payment_status: "unpaid" | "partial" | "paid"
       payment_type: "receipt" | "payment"
       stock_movement_type:
-        | "sale"
-        | "purchase"
-        | "sale_return"
-        | "purchase_return"
-        | "adjustment"
-        | "opening"
+      | "sale"
+      | "purchase"
+      | "sale_return"
+      | "purchase_return"
+      | "adjustment"
+      | "opening"
       voucher_status: "draft" | "confirmed" | "cancelled"
       voucher_type:
-        | "purchase_invoice"
-        | "debit_note"
-        | "tax_invoice"
-        | "credit_note"
-        | "receipt_voucher"
-        | "journal_entry"
-        | "gst_payment"
-        | "tcs_tds_payment"
-        | "gst_journal"
-        | "gst_havala"
-        | "havala"
-        | "payment_voucher"
-        | "sales_enquiry"
-        | "sales_quotation"
-        | "sales_order"
-        | "delivery_challan"
-        | "purchase_order"
-        | "sales_invoice"
+      | "purchase_invoice"
+      | "debit_note"
+      | "tax_invoice"
+      | "credit_note"
+      | "receipt_voucher"
+      | "journal_entry"
+      | "gst_payment"
+      | "tcs_tds_payment"
+      | "gst_journal"
+      | "gst_havala"
+      | "havala"
+      | "payment_voucher"
+      | "sales_enquiry"
+      | "sales_quotation"
+      | "sales_order"
+      | "delivery_challan"
+      | "purchase_order"
+      | "sales_invoice"
     }
     CompositeTypes: {
-      [_ in never]: never
+      crm_analysis_result: {
+        current_projected_revenue: number | null
+        feasibility_status: string | null
+        gap_leads: number | null
+        gap_revenue: number | null
+        is_feasible: boolean | null
+        recommendation_text: string | null
+        required_invoices: number | null
+        required_leads: number | null
+        required_revenue: number | null
+        simulation_projected_revenue: number | null
+        suggested_focus_area: string | null
+      }
+      crm_baseline_metrics: {
+        avg_deal_value: number | null
+        avg_sales_cycle_days: number | null
+        conversion_rate: number | null
+        deals_per_salesperson_per_month: number | null
+        top_performing_product_category: string | null
+        top_performing_zone: string | null
+        total_invoices_last_period: number | null
+        total_leads_last_period: number | null
+        total_revenue_last_period: number | null
+      }
+      crm_command_dashboard_data: {
+        todays_leads: number | null
+        pending_followups: number | null
+        revenue_mtd: number | null
+        revenue_target_mtd: number | null
+        top_blocker: string | null
+      }
+      crm_pipeline_stage: {
+        stage: string | null
+        count: number | null
+        value: number | null
+        avg_age_days: number | null
+      }
+      crm_customer_insight: {
+        party_name: string | null
+        segment: string | null
+        last_order_days_ago: number | null
+        total_revenue: number | null
+        action_needed: string | null
+      }
+      crm_smart_task: {
+        task_type: string | null
+        description: string | null
+        priority: string | null
+        deal_value: number | null
+        reference_id: string | null
+      }
     }
   }
 }
@@ -4047,116 +4132,116 @@ type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
 
 export type Tables<
   DefaultSchemaTableNameOrOptions extends
-    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
-    | { schema: keyof DatabaseWithoutInternals },
+  | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+  | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never = never,
+  ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+    DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+  : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
   ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+    DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
       Row: infer R
     }
-    ? R
-    : never
+  ? R
+  : never
   : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
-        DefaultSchema["Views"])
-    ? (DefaultSchema["Tables"] &
-        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
-        Row: infer R
-      }
-      ? R
-      : never
-    : never
+    DefaultSchema["Views"])
+  ? (DefaultSchema["Tables"] &
+    DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+      Row: infer R
+    }
+  ? R
+  : never
+  : never
 
 export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema["Tables"]
-    | { schema: keyof DatabaseWithoutInternals },
+  | keyof DefaultSchema["Tables"]
+  | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+  ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+  : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
   ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-      Insert: infer I
-    }
-    ? I
-    : never
+    Insert: infer I
+  }
+  ? I
+  : never
   : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-        Insert: infer I
-      }
-      ? I
-      : never
-    : never
+  ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+    Insert: infer I
+  }
+  ? I
+  : never
+  : never
 
 export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema["Tables"]
-    | { schema: keyof DatabaseWithoutInternals },
+  | keyof DefaultSchema["Tables"]
+  | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+  ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+  : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
   ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-      Update: infer U
-    }
-    ? U
-    : never
+    Update: infer U
+  }
+  ? U
+  : never
   : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-        Update: infer U
-      }
-      ? U
-      : never
-    : never
+  ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+    Update: infer U
+  }
+  ? U
+  : never
+  : never
 
 export type Enums<
   DefaultSchemaEnumNameOrOptions extends
-    | keyof DefaultSchema["Enums"]
-    | { schema: keyof DatabaseWithoutInternals },
+  | keyof DefaultSchema["Enums"]
+  | { schema: keyof DatabaseWithoutInternals },
   EnumName extends DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never = never,
+  ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+  : never = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
   ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
   : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
-    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
-    : never
+  ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+  : never
 
 export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
-    | keyof DefaultSchema["CompositeTypes"]
-    | { schema: keyof DatabaseWithoutInternals },
+  | keyof DefaultSchema["CompositeTypes"]
+  | { schema: keyof DatabaseWithoutInternals },
   CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never = never,
+  ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+  : never = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
   ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
   : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
-    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
-    : never
+  ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+  : never
 
 export const Constants = {
   public: {

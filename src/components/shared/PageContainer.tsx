@@ -4,7 +4,7 @@ import { LucideIcon } from 'lucide-react';
 
 interface PageContainerProps {
   title: string;
-  description?: string;
+  description?: ReactNode;
   icon?: LucideIcon;
   children: ReactNode;
   showRefresh?: boolean;

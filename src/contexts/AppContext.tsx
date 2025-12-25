@@ -17,6 +17,7 @@ interface AppState {
   purchaseInvoices: Invoice[];
   currentFinancialYear: string;
   sidebarCollapsed: boolean;
+  isCRMMode: boolean; // Track if we are in Strategic CRM Mode
 }
 
 interface AppContextType extends AppState {
@@ -24,20 +25,22 @@ interface AppContextType extends AppState {
   addParty: (party: Omit<Party, 'id' | 'currentBalance'>) => void;
   updateParty: (id: string, party: Partial<Party>) => void;
   deleteParty: (id: string) => void;
-  
+
   // Item actions
   addItem: (item: Omit<Item, 'id'>) => void;
   updateItem: (id: string, item: Partial<Item>) => void;
   deleteItem: (id: string) => void;
-  
+
   // Invoice actions
   addSalesInvoice: (invoice: Omit<Invoice, 'id'>) => void;
   addPurchaseInvoice: (invoice: Omit<Invoice, 'id'>) => void;
-  
+
   // Settings
   setFinancialYear: (year: string) => void;
   toggleSidebar: () => void;
-  
+  toggleCRMMode: () => void;
+  setIsCRMMode: (value: boolean) => void;
+
   // Helpers
   getPartyById: (id: string) => Party | undefined;
   getItemById: (id: string) => Item | undefined;
@@ -50,8 +53,27 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<Item[]>(mockItems);
   const [salesInvoices, setSalesInvoices] = useState<Invoice[]>(mockSalesInvoices);
   const [purchaseInvoices, setPurchaseInvoices] = useState<Invoice[]>(mockPurchaseInvoices);
+
   const [currentFinancialYear, setCurrentFinancialYear] = useState(financialYears[0].id);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
+  // Initialize CRM Mode from localStorage if present
+  const [isCRMMode, setIsCRMModeState] = useState(() => {
+    return localStorage.getItem('isCRMMode') === 'true';
+  });
+
+  const setIsCRMMode = useCallback((value: boolean) => {
+    setIsCRMModeState(value);
+    localStorage.setItem('isCRMMode', value.toString());
+  }, []);
+
+  const toggleCRMMode = useCallback(() => {
+    setIsCRMModeState(prev => {
+      const newValue = !prev;
+      localStorage.setItem('isCRMMode', newValue.toString());
+      return newValue;
+    });
+  }, []);
 
   // Party actions
   const addParty = useCallback((party: Omit<Party, 'id' | 'currentBalance'>) => {
@@ -99,7 +121,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       id: `sale-${Date.now()}`,
     };
     setSalesInvoices((prev) => [...prev, newInvoice]);
-    
+
     // Update stock
     invoice.items.forEach((item) => {
       setItems((prev) =>
@@ -127,7 +149,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       id: `purchase-${Date.now()}`,
     };
     setPurchaseInvoices((prev) => [...prev, newInvoice]);
-    
+
     // Update stock
     invoice.items.forEach((item) => {
       setItems((prev) =>
@@ -190,6 +212,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         toggleSidebar,
         getPartyById,
         getItemById,
+        isCRMMode,
+        toggleCRMMode,
+        setIsCRMMode,
       }}
     >
       {children}

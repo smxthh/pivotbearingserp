@@ -14,6 +14,8 @@ import {
   AlertCircle,
   Info,
   X,
+  Sparkles,
+  ArrowRight,
 } from 'lucide-react';
 import { PageContainer } from '@/components/shared/PageContainer';
 import { KPICard } from '@/components/dashboard/KPICard';
@@ -498,6 +500,26 @@ export default function Dashboard() {
         {/* Row 4: Daily Quote */}
         <div className="mt-8">
           <DailyQuote />
+        </div>
+
+        {/* CRM Operations Navigation */}
+        <div className="mt-8">
+          <button
+            onClick={() => navigate('/crm/operations')}
+            className="w-full group bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl p-6 text-left hover:shadow-xl transition-all duration-300"
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="flex items-center gap-2 text-white/80 text-sm font-medium uppercase tracking-wider mb-2">
+                  <Sparkles className="h-4 w-4" />
+                  Intelligence • Strategic • CRM
+                </div>
+                <h3 className="text-xl font-bold text-white">Generate Expansion Plan</h3>
+                <p className="text-white/70 mt-1">AI-powered business intelligence and sales strategy</p>
+              </div>
+              <ArrowRight className="h-6 w-6 text-white/50 group-hover:text-white group-hover:translate-x-2 transition-all" />
+            </div>
+          </button>
         </div>
       </div>
     </PageContainer>

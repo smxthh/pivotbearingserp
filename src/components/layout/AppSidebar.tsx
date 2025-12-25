@@ -42,6 +42,8 @@ import {
   Stamp,
   PackageOpen,
   Archive,
+  Sparkles,
+  ArrowRight,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useApp } from '@/contexts/AppContext';
@@ -208,6 +210,28 @@ const menuGroups: MenuGroup[] = [
         icon: Settings,
         allowedRoles: ['superadmin', 'admin', 'salesperson']
       },
+    ]
+  }
+];
+
+// CRM Menu Groups
+const crmMenuGroups: MenuGroup[] = [
+  {
+    label: 'INTELLIGENCE',
+    items: [
+      { title: 'CRM Operations', href: '/crm/operations', icon: Settings },
+      { title: 'Command Center', href: '/crm/dashboard', icon: LayoutDashboard },
+      { title: 'Strategic Intelligence', href: '/crm/intelligence', icon: BarChart3 },
+      { title: 'Pipeline Health', href: '/crm/pipeline', icon: TrendingUp },
+      { title: 'Customer Insights', href: '/crm/customers', icon: Users },
+      { title: 'Execution Tasks', href: '/crm/tasks', icon: ClipboardList },
+      { title: 'Revenue Growth', href: '/crm/revenue', icon: IndianRupee },
+    ]
+  },
+  {
+    label: 'STRATEGY',
+    items: [
+      { title: 'Expansion Planner', href: '/crm/planner', icon: Sparkles },
     ]
   }
 ];
@@ -413,7 +437,7 @@ function MenuItem({
 
 export function AppSidebar() {
   const location = useLocation();
-  const { sidebarCollapsed, toggleSidebar } = useApp();
+  const { sidebarCollapsed, toggleSidebar, isCRMMode, toggleCRMMode } = useApp();
   const { role } = useAuth();
   const { profile } = useDistributorProfile();
   const { hasAccess, isSuperadmin, hasAnyPermissions } = useUserPermissions();
@@ -476,8 +500,9 @@ export function AppSidebar() {
             {/* Company Name - truncates if too long */}
             <div className="flex-1 min-w-0 pr-2">
               <h1 className="text-sm font-semibold text-slate-800 truncate">
-                {profile?.company_name || 'Pivot ERP'}
+                {isCRMMode ? 'Strategic Intelligence' : (profile?.company_name || 'Pivot ERP')}
               </h1>
+              {isCRMMode && <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded ml-1 font-medium">CRM</span>}
             </div>
 
             {/* Toggle Button */}
@@ -492,7 +517,7 @@ export function AppSidebar() {
 
           {/* Navigation */}
           <nav className="flex-1 overflow-y-auto py-4 px-2 scrollbar-thin">
-            {menuGroups.map((group) => (
+            {(isCRMMode ? crmMenuGroups : menuGroups).map((group) => (
               <MenuSection
                 key={group.label}
                 label={group.label}
@@ -504,6 +529,57 @@ export function AppSidebar() {
                 isGroupActive={isGroupActive}
               />
             ))}
+
+            {!isCRMMode ? (
+              /* CRM Promo Card - Brand Design */
+              <div className="mt-6 mb-4 px-2">
+                <NavLink
+                  to="/crm/operations"
+                  onClick={toggleCRMMode}
+                  className="w-full text-left block relative overflow-hidden rounded-2xl bg-primary/5 border border-primary/10 p-5 group transition-all duration-300 hover:bg-primary/10 hover:shadow-md hover:-translate-y-0.5"
+                >
+                  {/* Subtle Background Graphic */}
+                  <div className="absolute -top-6 -right-6 w-24 h-24 bg-primary/10 rounded-full blur-2xl transition-all duration-500 group-hover:bg-primary/20"></div>
+
+                  <div className="relative z-10">
+                    <div className="flex flex-col gap-1 mb-3">
+                      <span className="text-[10px] font-bold tracking-[0.2em] text-primary/60 uppercase">Intelligence</span>
+                      <h3 className="text-xl text-slate-800 font-normal leading-tight" style={{ fontFamily: 'TestDomaineDisplay' }}>
+                        Strategic <br /> CRM
+                      </h3>
+                    </div>
+
+                    <div className="flex items-center justify-between mt-4">
+                      <span className="text-[11px] font-medium text-slate-500 group-hover:text-primary transition-colors">
+                        Generate Expansion Plan
+                      </span>
+                      <div className="h-6 w-6 rounded-full bg-white flex items-center justify-center shadow-sm text-primary transition-transform duration-300 group-hover:translate-x-1">
+                        <ArrowRight className="h-3.5 w-3.5" />
+                      </div>
+                    </div>
+                  </div>
+                </NavLink>
+              </div>
+            ) : (
+              /* Return to ERP Card */
+              <div className="mt-6 mb-4 px-2">
+                <NavLink
+                  to="/"
+                  onClick={toggleCRMMode}
+                  className="w-full text-left block relative overflow-hidden rounded-2xl bg-slate-50 border border-slate-200 p-4 group transition-all duration-300 hover:bg-slate-100 hover:shadow-sm"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="h-8 w-8 rounded-lg bg-slate-200 flex items-center justify-center text-slate-600">
+                      <LayoutDashboard className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-slate-800">Return to ERP</p>
+                      <p className="text-[10px] text-slate-500">Operational Dashboard</p>
+                    </div>
+                  </div>
+                </NavLink>
+              </div>
+            )}
           </nav>
 
           {/* Footer */}
